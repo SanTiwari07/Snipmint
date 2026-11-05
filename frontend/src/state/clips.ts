@@ -17,6 +17,8 @@ export interface ClipsDraft {
   loudness: boolean
   voiceover: { enabled: boolean; engine: string; voice_id: string }
   jobId: string | null
+  /** Picks from an opened project, applied once its moments are loaded. */
+  pending: { selected: string[]; edits: ClipsDraft['edits'] } | null
 }
 
 const DEFAULT: ClipsDraft = {
@@ -33,6 +35,7 @@ const DEFAULT: ClipsDraft = {
   loudness: true,
   voiceover: { enabled: false, engine: 'edge', voice_id: 'en-US-AvaNeural' },
   jobId: null,
+  pending: null,
 }
 
 interface ClipsStore extends ClipsDraft {
@@ -76,6 +79,11 @@ export const useClips = create<ClipsStore>()(
         const ids = moments.map((m) => m.id)
         const sameSet = ids.length === prevIds.size && ids.every((id) => prevIds.has(id))
         // a new analysis pre-selects the three best moments
+        const pending = get().pending
+        if (pending && moments.length && pending.selected.every((id) => ids.includes(id))) {
+          set({ source: s, sourceError: null, selected: pending.selected, edits: pending.edits, pending: null })
+          return
+        }
         const selected =
           sameSet && get().selected.length
             ? get().selected.filter((id) => ids.includes(id))
@@ -99,6 +107,8 @@ export const useClips = create<ClipsStore>()(
     {
       name: 'snipmint.clips',
       version: 3,
+      // an older saved shape: start fresh (it only holds this tab's session)
+      migrate: () => ({ ...DEFAULT }) as unknown as ClipsStore,
       storage: createJSONStorage(() => {
         try {
           window.sessionStorage.setItem('snipmint.probe', '1')
@@ -109,8 +119,8 @@ export const useClips = create<ClipsStore>()(
         }
       }),
       partialize: (s) => {
-        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId } = s
-        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId }
+        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId, pending } = s
+        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId, pending }
       },
     },
   ),

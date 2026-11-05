@@ -145,6 +145,40 @@ describe('App', () => {
   })
 })
 
+describe('projects', () => {
+  it('opens a saved project on the make-clips step with its picks', async () => {
+    const project = {
+      snipmint_project: 1,
+      source: { id: 'yt-AAAAAAAAAAA', url: 'https://youtu.be/AAAAAAAAAAA', title: 'A long podcast' },
+      analysis: { band: 'medium', count: null },
+      selected: ['m02', 'm04'],
+      edits: { m04: { start: 401, end: 438 } },
+      captions: { preset: 'karaoke', overrides: {}, font: null },
+      captions_enabled: true,
+      format: 'reels',
+      framing: 'track',
+      export: { quality: 'fast', loudness: true },
+      voiceover: { enabled: false, engine: 'edge', voice_id: 'en-US-AvaNeural' },
+    }
+    const { container } = render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
+    )
+    await screen.findByLabelText(/youtube link/i)
+    const input = container.querySelector('input[accept=".json,application/json"]') as HTMLInputElement
+    const file = new File([JSON.stringify(project)], 'talk.snipmint.json', { type: 'application/json' })
+    fireEvent.change(input, { target: { files: [file] } })
+    expect(await screen.findByRole('heading', { name: /ready to make your clips/i })).toBeInTheDocument()
+    const st = useClips.getState()
+    expect(st.selected).toEqual(['m02', 'm04'])
+    expect(st.edits.m04).toEqual({ start: 401, end: 438 })
+    expect(st.framing).toBe('track')
+    expect(useDraft.getState().captions.preset).toBe('karaoke')
+    expect(posted.some((p) => p.path === '/api/sources')).toBe(false) // the video was already prepared
+  })
+})
+
 describe('flow guards', () => {
   it('needs a ready video and at least one moment', () => {
     expect(screenFor('/source', { ready: false, selected: 0 })?.next?.blocked).toBeTruthy()

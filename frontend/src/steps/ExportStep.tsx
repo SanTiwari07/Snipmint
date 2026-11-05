@@ -5,6 +5,7 @@ import { api, watchJob } from '../api/client'
 import { type ClipsJob, FRAMINGS, LAYOUT_LABEL, clipFileUrl, clipsApi, clock } from '../api/clips'
 import { Banner, Button, ProgressBar, Segmented, Switch } from '../components/ui'
 import { VoiceOverSection } from '../components/VoiceOverSection'
+import { downloadProjectFile, toProjectFile } from '../lib/projectFile'
 import { useCatalog } from '../state/catalog'
 import { selectedClips, useClips } from '../state/clips'
 import { useDraft } from '../state/project'
@@ -255,6 +256,28 @@ export function ExportStep() {
           onChange={(v) => patch({ loudness: v })}
         />
       </section>
+
+      <div className="save-project">
+        <span className="save-project__text">
+          <strong>Save this project</strong>
+          <span className="field__hint">
+            Your video, picked moments and every choice in one small file. Open it later from the start screen.
+          </span>
+        </span>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            try {
+              downloadProjectFile(toProjectFile(useClips.getState(), draft, source?.meta?.title ?? ''))
+              toast('success', 'Project saved.')
+            } catch (e) {
+              toast('error', e instanceof Error ? e.message : 'Could not save the project.')
+            }
+          }}
+        >
+          Save project
+        </Button>
+      </div>
 
       <section className="section" aria-labelledby="choices-title">
         <h2 className="section__title" id="choices-title">

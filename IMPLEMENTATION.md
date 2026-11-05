@@ -12,8 +12,8 @@
 | 0. Scaffold + Docker | Done. CI green: tests on Windows and Linux, frontend, Docker build + health smoke test |
 | 1. Free MVP | Done. Link → download → Whisper → free moment scoring → center crop → captions → MP4/SRT/titles.json/zip. Web flow: Start, Video, Moments, Captions, Make clips. Tested end to end on a real YouTube video |
 | 2. Smart framing | Done. Black-bar removal, YuNet face tracking with a calm camera (cuts at scene changes), two-people split that switches to the speaker during close-ups (per scene), whole-picture "fit" for screens, Auto choice per clip, framing picker in the UI. Tested on real videos (speech, screen recording, two-shot interview). Single-clip caption re-render not started |
-| 3. Advanced AI | Backend done: Gemini two-pass provider, key check, redaction, fallback; Free/Advanced switch and key field in the UI. Layout picker not started |
-| 4. Extras | Local AI provider done; upload, cookies UI, silent-video vision, hook voice-over not started |
+| 3. Advanced AI | Done. Gemini two-pass provider, key check, redaction, fallback, caption proofreading (single-word fixes), silent-video picking with a length guard, model choice; Free/Advanced switch and key field in the UI. Gemini layout picker not built: the face-based Auto framing covers it |
+| 4. Extras | Done: file upload, local AI provider, -14 LUFS levelling, hook voice-over (Edge/Kokoro/cloned voice), save/open project files, captions on/off, size and length limits. Not built: cookies upload in the UI (use YOUTUBE_COOKIES_FILE), single-clip caption re-render |
 
 **How to use this doc:**
 - Work the phases in order. Each task lists the files it touches, what it ports (if anything), and how to check it.

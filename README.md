@@ -25,13 +25,16 @@
 
 ## What it does
 
-1. **You paste a YouTube link.**
+1. **You paste a YouTube link** (or upload a video file from your computer).
 2. Snipmint **downloads** the video and **transcribes** every word with its timing (locally, with Whisper).
 3. It **finds the best moments** (30-60 s by default) and shows them as cards with a score and a reason.
 4. **You pick** the clips you like.
-5. Each clip is **cropped to vertical** (9:16).
+5. Each clip is **cropped to vertical** (9:16): it follows the speaker, stacks two people
+   during two-shots, or keeps the whole picture for screen recordings. Black bars are removed.
 6. You choose one of **10 caption styles** with a live preview.
-7. You **download** MP4s, SRT subtitles and suggested titles.
+7. Optional: an AI voice reads each clip's **hook** over its first seconds.
+8. You **download** MP4s (levelled to -14 LUFS), SRT subtitles and suggested titles, and can
+   **save the project** to open it again later.
 
 ## Free vs Advanced
 
@@ -39,6 +42,8 @@
 |---|---|---|
 | Picks moments with | YouTube "most replayed" data, strong opening lines, loudness, keywords, full sentences | Gemini reads the transcript like an editor: stories, punchlines, payoffs |
 | Titles and hooks | Taken from the transcript or chapters | Written for each platform |
+| Captions | Whisper's words | Misheard names and terms corrected |
+| Videos with little speech | Replay data or evenly spread | Gemini watches the video (up to 45 min) |
 | Your data | Stays on your computer | Transcript text (and a few frames) go to Google |
 | Cost | Free | A few cents per hour of video |
 
