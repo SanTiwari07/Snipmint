@@ -256,8 +256,10 @@ def _no_speech_moments(meta: SourceMeta, signals: Signals, opts: AnalyzeOptions,
             t += step
         candidates.sort(key=lambda x: -x[1])
     else:
-        gap = (dur - length) / max(1, count)
-        candidates = [(gap * (i + 0.5), 0.5) for i in range(count)]
+        # first clip at the start, last one ending at the end, the rest evenly between
+        step = (dur - length) / (count - 1) if count > 1 else 0.0
+        starts = [step * i for i in range(count)] if count > 1 else [(dur - length) / 2]
+        candidates = [(s, 0.5) for s in starts]
     picked: list[Moment] = []
     for start, heat in candidates:
         span = (start, start + length)

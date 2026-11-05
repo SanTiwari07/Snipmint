@@ -37,9 +37,17 @@ export function SourceStep() {
       if (cancelled || !s) return
       const running = s.task && (s.task.status === 'running' || s.task.status === 'queued')
       if (!running || !taskId) return
+      let lastStage = ''
       stop.current = watchJob(
         taskId,
-        (e) => setLive(e),
+        (e) => {
+          setLive(e)
+          // a new stage means new facts on the server (title, duration, transcript): reload them
+          if (e.stage !== lastStage) {
+            lastStage = e.stage
+            void refresh()
+          }
+        },
         async (end) => {
           setLive(null)
           const fresh = await refresh()
@@ -81,7 +89,10 @@ export function SourceStep() {
   const failed = source?.status.error
   const running = !!live || source?.task?.status === 'running' || source?.task?.status === 'queued'
   const liveStage = (live?.stage ?? '') as StageName
-  const current = STAGE_ORDER.find((s) => stages?.[s] === 'running') ?? (STAGE_ORDER.includes(liveStage) ? liveStage : null)
+  // the live event is the freshest truth; the saved status is for when nothing is streaming
+  const current = STAGE_ORDER.includes(liveStage) ? liveStage : (STAGE_ORDER.find((s) => stages?.[s] === 'running') ?? null)
+  const currentIdx = current ? STAGE_ORDER.indexOf(current) : -1
+  const isDone = (s: StageName) => stages?.[s] === 'done' || (currentIdx >= 0 && STAGE_ORDER.indexOf(s) < currentIdx)
   const ready = !!source?.analysis?.moments.length && stages?.analyze === 'done'
   const interrupted = !running && !ready && !failed && !!source
 
@@ -129,7 +140,7 @@ export function SourceStep() {
             {STAGE_ORDER.map((s) => (
               <li
                 key={s}
-                className={stages?.[s] === 'done' ? 'stage stage--done' : s === current ? 'stage stage--now' : 'stage'}
+                className={s === current ? 'stage stage--now' : isDone(s) ? 'stage stage--done' : 'stage'}
               >
                 {STAGE_LABELS[s]}
               </li>

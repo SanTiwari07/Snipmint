@@ -61,6 +61,9 @@ docker compose up --build
 ```
 
 Open the link the container prints (`http://localhost:8000/?token=...`). Your videos and clips land in `./data`.
+If you started it in the background (`docker compose up -d`), get the link with
+`docker compose logs snipmint`; it changes on every restart unless you set `SNIPMINT_TOKEN` in `.env`.
+The first video also downloads the speech model (about 460 MB for `small`) into `./data/models`.
 
 - **NVIDIA GPU:** `docker compose --profile gpu up --build snipmint-gpu`
 - **Local AI (Ollama):** `docker compose --profile ollama up`, then set `LLM_BASE_URL=http://ollama:11434/v1`

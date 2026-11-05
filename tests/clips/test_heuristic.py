@@ -65,3 +65,10 @@ def test_silent_video_falls_back_to_even_spread():
     moments = pick_moments(t, Signals(), meta, opts)
     assert len(moments) == 3
     assert all(m.end - m.start == 45 for m in moments)
+
+
+def test_silent_short_video_still_gets_the_requested_clips():
+    t = make_transcript(["Hm."])
+    meta = SourceMeta(id="up-x", url="file:x.mp4", title="Tone", duration=40)
+    moments = pick_moments(t, Signals(), meta, AnalyzeOptions(min_seconds=10, max_seconds=20, count=2))
+    assert [(m.start, m.end) for m in sorted(moments, key=lambda m: m.start)] == [(0.0, 15.0), (25.0, 40.0)]
