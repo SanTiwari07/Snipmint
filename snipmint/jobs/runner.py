@@ -262,7 +262,8 @@ class JobRunner:
                     seen[folder.name] = json.loads(meta.read_text(encoding="utf-8"))
                 except (OSError, ValueError):
                     continue
-        return sorted(seen.values(), key=lambda j: j["id"], reverse=True)[:limit]
+        # ids only resolve to the second; the creation time orders jobs started in the same second
+        return sorted(seen.values(), key=lambda j: (j.get("created") or 0, j["id"]), reverse=True)[:limit]
 
 
 def _result_summary(res: Any) -> dict[str, Any]:
