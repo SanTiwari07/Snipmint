@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { type AiMode, clipsApi, getGeminiKey, setAiMode, setGeminiKey } from '../api/clips'
+import { type AiMode, clipsApi, getGeminiKey, getGeminiModel, setAiMode, setGeminiKey, setGeminiModel } from '../api/clips'
 import type { Health } from '../api/types'
 import type { Toast } from '../state/session'
 import { Button, Segmented } from './ui'
@@ -17,6 +17,7 @@ export function AiSettings({
   onToast: (kind: Toast['kind'], message: string) => void
 }) {
   const [key, setKey] = useState(getGeminiKey())
+  const [model, setModel] = useState(getGeminiModel())
   const [checking, setChecking] = useState(false)
   const [keyState, setKeyState] = useState<'unknown' | 'ok' | 'bad'>('unknown')
   const [keyError, setKeyError] = useState<string | null>(null)
@@ -109,6 +110,20 @@ export function AiSettings({
               {keyError}
             </p>
           )}
+          <label className="field">
+            <span className="field__label">Model (optional)</span>
+            <input
+              className="input"
+              type="text"
+              spellCheck={false}
+              placeholder="gemini-3.1-flash-lite (default)"
+              value={model}
+              onChange={(e) => {
+                setModel(e.target.value)
+                setGeminiModel(e.target.value.trim())
+              }}
+            />
+          </label>
           <p className="field__hint">
             Get a key at{' '}
             <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">

@@ -161,6 +161,25 @@ export function setGeminiKey(key: string) {
   }
 }
 
+const MODEL_STORE = 'snipmint.geminiModel'
+
+export function getGeminiModel(): string {
+  try {
+    return window.localStorage.getItem(MODEL_STORE) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function setGeminiModel(model: string) {
+  try {
+    if (model) window.localStorage.setItem(MODEL_STORE, model)
+    else window.localStorage.removeItem(MODEL_STORE)
+  } catch {
+    /* ignore */
+  }
+}
+
 export function getAiMode(): AiMode {
   try {
     return window.localStorage.getItem(MODE_STORE) === 'advanced' ? 'advanced' : 'free'
@@ -179,8 +198,13 @@ export function setAiMode(mode: AiMode) {
 
 /** Header with the Gemini key, only in Advanced mode (the server falls back to its own key). */
 function aiHeaders(): Record<string, string> {
+  if (getAiMode() !== 'advanced') return {}
+  const out: Record<string, string> = {}
   const key = getGeminiKey().trim()
-  return getAiMode() === 'advanced' && key ? { 'X-Gemini-Key': key } : {}
+  const model = getGeminiModel().trim()
+  if (key) out['X-Gemini-Key'] = key
+  if (model) out['X-Gemini-Model'] = model
+  return out
 }
 
 function postWithAi<T>(path: string, body: unknown): Promise<T> {

@@ -16,6 +16,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from .. import config
+from ..analyze.service import load_transcript
 from ..analyze.signals import Signals
 from ..audio import ffmpeg as ff
 from ..captions.ass import build_captions
@@ -31,7 +32,6 @@ from ..models import ProgressEvent
 from ..project import CaptionsConfig
 from ..reframe.framing import Framing, FramingPlan, plan_framing
 from ..render.ffmpeg_render import RenderSpec, render, render_frame
-from ..transcribe.models import Transcript
 
 log = logging.getLogger("snipmint.clips")
 
@@ -116,7 +116,7 @@ def make_clips(
     if source is None or not source.video.is_file() or not source.file("transcript.json").is_file():
         raise SnipmintError("That video isn't ready yet. Analyse it first.")
     meta = source.meta
-    transcript = Transcript.model_validate(source.read_json("transcript.json"))
+    transcript = load_transcript(source)
     fmt = get_format(req.format)
     if not fmt.is_video:
         raise ScriptError("Pick a video format for clips.")
@@ -281,7 +281,7 @@ def preview_clip_frame(req: ClipPreviewRequest) -> bytes:
     source = Source.existing(req.source_id)
     if source is None or not source.video.is_file() or not source.file("transcript.json").is_file():
         raise SnipmintError("That video isn't ready yet.")
-    transcript = Transcript.model_validate(source.read_json("transcript.json"))
+    transcript = load_transcript(source)
     fmt = get_format(req.format)
     if not fmt.is_video:
         raise ScriptError("Pick a video format for clips.")

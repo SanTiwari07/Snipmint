@@ -141,3 +141,66 @@ Return only:
   ]
 }}
 """
+
+
+class VisualClip(BaseModel):
+    start: float
+    end: float
+    predicted_score: int = 50
+    video_description_for_tiktok: str = ""
+    video_description_for_instagram: str = ""
+    video_title_for_youtube_short: str = ""
+    viral_hook_text: str = ""
+    why: str = ""
+
+
+class VisualResponse(BaseModel):
+    shorts: list[VisualClip]
+
+
+# Ported from openshorts/gemini_worker.py VISUAL_PROMPT_TEMPLATE (MIT, (c) 2024 OpenShorts).
+VISUAL_PROMPT_TEMPLATE = """
+You are a senior short-form video editor. This video has little or no speech: judge it by what
+you SEE. Watch the whole thing and pick the {min_clips} to {max_clips} MOST engaging visual
+moments for TikTok / Reels / Shorts (action, reveals, transformations, striking or funny shots,
+satisfying payoffs, dramatic movement).
+
+TIME CONTRACT (STRICT):
+- Timestamps in ABSOLUTE SECONDS from the start, numbers with up to 3 decimals.
+- 0 <= start < end <= {video_duration}.
+- Each clip {min_secs:g} to {max_secs:g} seconds long. If the whole video is shorter than
+  {min_secs:g}s, return one clip spanning the full video.
+- Cut on visual scene changes, never mid-motion.
+
+For each clip write catchy copy in {language}: a scroll-stopping hook (max 10 words), a TikTok
+and an Instagram description, a YouTube title (max 100 chars) and `why` (one sentence on what
+makes it worth a clip). Order clips best to worst.
+VIDEO_TITLE: {title}
+"""
+
+
+class WordFix(BaseModel):
+    i: int
+    text: str
+
+
+class FixResponse(BaseModel):
+    fixes: list[WordFix]
+
+
+FIX_PROMPT_TEMPLATE = """
+You proofread automatic speech recognition for on-screen captions.
+Below are the words of short clips from a video titled "{title}" (language: {language}), each as
+[index, word]. Fix ONLY words the recogniser clearly got wrong: misheard names of people, brands,
+products, places and technical terms, and obvious mis-hearings that make no sense in context.
+
+Rules:
+- Return only valid JSON: {{"fixes": [{{"i": <index>, "text": "<corrected word>"}}]}}.
+- One word in, one word out: never merge, split, add or remove words; keep the punctuation
+  attached to the word as it was.
+- Do not rephrase, do not fix grammar or style, do not change words that are plausible.
+- When unsure, leave the word alone. An empty list is a fine answer.
+
+CLIPS_JSON:
+{clips_json}
+"""

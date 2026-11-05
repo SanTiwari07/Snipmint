@@ -131,3 +131,98 @@ def test_score_batches_are_near_equal(n, size):
     batches = llm_pass.score_batches(list(range(n)), size)
     assert sum(len(b) for b in batches) == n
     assert max(len(b) for b in batches) - min(len(b) for b in batches) <= 1
+
+
+# ---------------------------------------------------------------------- proofreading + silent videos
+
+
+class ScriptedModels:
+    """Answers each schema with a fixed payload and records what it was sent."""
+
+    def __init__(self, answers):
+        self.answers = answers
+        self.contents = []
+
+    def generate_content(self, model, contents, config):
+        self.contents.append(contents)
+        schema = config["response_schema"] if isinstance(config, dict) else config.response_schema
+        return types.SimpleNamespace(prompt_feedback=None, candidates=[], parsed=None,
+                                     text=json.dumps(self.answers[schema.__name__]))  # fmt: skip
+
+
+def test_proofread_accepts_only_clean_single_word_swaps():
+    from snipmint.analyze.schemas import Moment
+    from snipmint.transcribe.models import Segment, Transcript, Word
+
+    words = [Word(text=f" {w}", start=i, end=i + 0.5) for i, w in enumerate(["I", "met", "Kenu", "Reeves", "at", "the", "fern", "show"])]
+    t = Transcript(language="en", duration=10, segments=[Segment(start=0, end=10, text="x", words=words)])
+    fixes = {"fixes": [{"i": 2, "text": "Keanu"}, {"i": 7, "text": "Between Two Ferns"},
+                       {"i": 99, "text": "x"}, {"i": 3, "text": "Reeves"}]}  # fmt: skip
+    client = types.SimpleNamespace(models=ScriptedModels({"FixResponse": fixes}))
+    m = Moment(id="m01", start=0, end=10, score=50)
+    assert gemini.proofread(client, "m", t, [m], "Keanu Reeves interview") == {2: "Keanu"}
+
+
+def test_service_applies_fixes_to_later_captions(tmp_path, monkeypatch):
+    monkeypatch.setenv("SNIPMINT_HOME", str(tmp_path))
+    t = long_transcript(120, hook_at=60)
+    src = Source("yt-DDDDDDDDDDD")
+    src.save_meta(_meta(t))
+    src.write_json("transcript.json", t.model_dump())
+    fake = types.SimpleNamespace(models=FakeModels())
+    real_generate = fake.models.generate_content
+
+    def generate(model, contents, config):
+        schema = config["response_schema"] if isinstance(config, dict) else config.response_schema
+        if schema.__name__ == "FixResponse":
+            first = json.loads(contents.split("CLIPS_JSON:\n", 1)[1])[0][0]
+            return types.SimpleNamespace(prompt_feedback=None, candidates=[], parsed=None,
+                                         text=json.dumps({"fixes": [{"i": first[0], "text": "Gemini!"}]}))  # fmt: skip
+        return real_generate(model, contents, config)
+
+    fake.models.generate_content = generate
+    monkeypatch.setattr(gemini, "make_client", lambda key: fake)
+    res = service.analyze(src, AnalyzeOptions(provider="gemini", min_seconds=15, max_seconds=30, count=2),
+                          gemini_key="k", gemini_model="gemini-test")  # fmt: skip
+    assert res.provider == "gemini"
+    fixed = service.load_transcript(src)
+    assert sum(w.text.strip() == "Gemini!" for w in fixed.words) == 1
+    assert "Gemini!" in res.moments[0].text or "Gemini!" in " ".join(m.text for m in res.moments)
+    # the raw transcript on disk is untouched
+    assert "Gemini!" not in src.file("transcript.json").read_text(encoding="utf-8")
+
+
+def test_silent_video_is_watched_by_gemini(tmp_path, monkeypatch):
+    from snipmint.audio import ffmpeg as ff
+    from snipmint.transcribe.models import Transcript
+
+    if not ff.available():
+        pytest.skip("ffmpeg needed")
+    video = tmp_path / "source.mp4"
+    ff.run_ffmpeg(["-f", "lavfi", "-i", "testsrc2=size=320x180:rate=10:duration=6", "-pix_fmt", "yuv420p", str(video)])
+    meta = SourceMeta(id="up-x", url="file:x.mp4", title="Skate tricks", duration=120)
+    answer = {"shorts": [
+        {"start": 10, "end": 30, "predicted_score": 88, "video_title_for_youtube_short": "Kickflip",
+         "viral_hook_text": "Wait for it", "why": "Clean landing"},
+        {"start": 12, "end": 28, "predicted_score": 70},  # overlaps the first: dropped
+        {"start": 60, "end": 90, "predicted_score": 60, "video_title_for_youtube_short": "Grind"},
+    ]}  # fmt: skip
+    models = ScriptedModels({"VisualResponse": answer})
+    deleted = []
+    files = types.SimpleNamespace(
+        upload=lambda file: types.SimpleNamespace(name="files/abc"),
+        get=lambda name: types.SimpleNamespace(state=types.SimpleNamespace(name="ACTIVE")),
+        delete=lambda name: deleted.append(name),
+    )
+    client = types.SimpleNamespace(models=models, files=files)
+    moments = gemini.pick_moments(Transcript(language="en", duration=120), Signals(), meta,
+                                  AnalyzeOptions(min_seconds=15, max_seconds=30, count=3), client=client,
+                                  video=video)  # fmt: skip
+    assert [m.title for m in moments] == ["Kickflip", "Grind"]
+    assert deleted == ["files/abc"]
+    assert isinstance(models.contents[0], list) and models.contents[0][0].name == "files/abc"
+    assert (tmp_path / "gemini_upload.mp4").is_file()
+
+    long_meta = meta.model_copy(update={"duration": 3 * 3600})
+    with pytest.raises(Exception, match="up to 45 minutes"):
+        gemini.visual_moments(client, "m", video, long_meta, AnalyzeOptions())

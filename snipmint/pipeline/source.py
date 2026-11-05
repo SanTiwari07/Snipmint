@@ -61,6 +61,7 @@ def prepare_source(
     opts: AnalyzeOptions,
     *,
     gemini_key: str | None = None,
+    gemini_model: str | None = None,
     progress: ProgressCallback | None = None,
     cancel: threading.Event | None = None,
 ) -> dict:
@@ -135,7 +136,7 @@ def prepare_source(
             current = "analyze"
             source.set_stage("analyze", "running")
             result = service.analyze(
-                source, opts, gemini_key=gemini_key,
+                source, opts, gemini_key=gemini_key, gemini_model=gemini_model,
                 progress=lambda f, m: _emit(progress, "analyze", f, m),
             )  # fmt: skip
             source.set_stage("analyze", "done")
@@ -161,6 +162,7 @@ def reanalyze(
     opts: AnalyzeOptions,
     *,
     gemini_key: str | None = None,
+    gemini_model: str | None = None,
     progress: ProgressCallback | None = None,
 ) -> dict:
     """Run only the analysis again (other length, count or provider)."""
@@ -168,7 +170,7 @@ def reanalyze(
         source.set_stage("analyze", "running")
         try:
             result = service.analyze(
-                source, opts, gemini_key=gemini_key,
+                source, opts, gemini_key=gemini_key, gemini_model=gemini_model,
                 progress=lambda f, m: progress and progress(
                     ProgressEvent(stage="analyze", fraction=f, message=m)),
             )  # fmt: skip

@@ -78,12 +78,14 @@ def analyze(
     opts: AnalyzeOptions,
     *,
     gemini_key: str | None = None,
+    gemini_model: str | None = None,
     progress: Callable[[float, str], None] | None = None,
 ) -> AnalysisResult:
     meta = source.meta
     if meta is None:
         raise AnalysisError("This video has no metadata yet.")
     transcript, signals = load_inputs(source)
+    transcript = apply_fixes(source, transcript)
     provider = resolve_provider(opts.provider, gemini_key)
     reason: str | None = None
     moments: list[Moment]
@@ -95,8 +97,11 @@ def analyze(
             if progress:
                 progress(0.1, "Asking Gemini to pick the best moments" if provider == "gemini"
                          else "Asking the local AI to pick the best moments")  # fmt: skip
-            out = fn(transcript, signals, meta, opts, api_key=gemini_key) if provider == "gemini" \
-                else fn(transcript, signals, meta, opts)  # fmt: skip
+            if provider == "gemini":
+                out = fn(transcript, signals, meta, opts, api_key=gemini_key, model=gemini_model,
+                         video=source.video if source.video.is_file() else None)  # fmt: skip
+            else:
+                out = fn(transcript, signals, meta, opts)
             if isinstance(out, tuple):
                 moments, cost = out
             else:
@@ -117,14 +122,66 @@ def analyze(
             for m in moments:
                 m.fallback = True
 
+    if provider == "gemini":  # proofread the picked clips' words (names, brands); never fatal
+        try:
+            from .providers import gemini
+
+            if progress:
+                progress(0.9, "Checking names and terms in the captions")
+            client = gemini.make_client((gemini_key or os.environ.get("GEMINI_API_KEY") or "").strip())
+            fixes = gemini.proofread(client, (gemini_model or "").strip() or gemini.model_name(),
+                                     transcript, moments, meta.title)  # fmt: skip
+            if fixes:
+                save_fixes(source, fixes)
+                transcript = apply_fixes(source, transcript)
+                log.info("Gemini corrected %d word(s) in the captions", len(fixes))
+        except Exception as exc:
+            log.warning("Caption proofreading skipped: %s", _short(exc))
+
     for m in moments:
-        if not m.text:
+        if not m.text or provider == "gemini":
             m.text = " ".join(w.text.strip() for w in transcript.words_between(m.start, m.end))
     result = AnalysisResult(provider=provider, requested=opts.provider, fallback_reason=reason,
                             options=opts, moments=moments, cost_usd=cost)  # fmt: skip
     source.write_json(source.moments_file(provider).name, result.model_dump())
     source.write_json("moments.latest.json", result.model_dump())
     return result
+
+
+FIXES_FILE = "transcript.fixes.json"
+
+
+def save_fixes(source: Source, fixes: dict[int, str]) -> None:
+    """Merge word corrections ({global word index: text}) into the source's fixes file."""
+    current: dict[str, str] = source.read_json(FIXES_FILE) if source.file(FIXES_FILE).is_file() else {}
+    current.update({str(i): t for i, t in fixes.items()})
+    source.write_json(FIXES_FILE, current)
+
+
+def apply_fixes(source: Source, transcript: Transcript) -> Transcript:
+    """The transcript with saved word corrections applied (text only; timings unchanged)."""
+    if not source.file(FIXES_FILE).is_file():
+        return transcript
+    try:
+        fixes = {int(k): str(v) for k, v in source.read_json(FIXES_FILE).items()}
+    except (ValueError, AttributeError):
+        return transcript
+    out = transcript.model_copy(deep=True)
+    n = 0
+    for seg in out.segments:
+        for w in seg.words:
+            if n in fixes:
+                lead = " " if w.text.startswith(" ") else ""
+                w.text = lead + fixes[n]
+            n += 1
+        if any(i in fixes for i in range(n - len(seg.words), n)):
+            seg.text = " ".join(w.text.strip() for w in seg.words)
+    return out
+
+
+def load_transcript(source: Source) -> Transcript:
+    """Transcript of a source with corrections applied (what captions are built from)."""
+    return apply_fixes(source, Transcript.model_validate(source.read_json("transcript.json")))
 
 
 def _short(exc: Exception) -> str:

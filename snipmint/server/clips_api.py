@@ -26,7 +26,13 @@ from ..pipeline import clips as clips_mod
 from ..pipeline import source as source_pipeline
 
 KEY_HEADER = "x-gemini-key"
+MODEL_HEADER = "x-gemini-model"
 _CLIP_FILE = re.compile(r"^(clip_\d{2}\.(mp4|srt|ass)|titles\.json|clips\.zip)$")
+
+
+def gemini_model_from(request: Request) -> str | None:
+    model = (request.headers.get(MODEL_HEADER) or "").strip()
+    return model if re.fullmatch(r"[A-Za-z0-9._-]{3,80}", model) else None
 
 
 def gemini_key_from(request: Request) -> str | None:
@@ -90,11 +96,13 @@ def register(app: FastAPI, runner: JobRunner) -> None:
     def create_source(req: SourceRequest, request: Request) -> SourceCreated:
         vid = youtube_video_id(req.url)  # raises IngestError -> 400 with a friendly message
         src = Source(source_id_for(vid))
-        return _start_prepare(src, canonical_url(vid), req.analysis, gemini_key_from(request))
+        return _start_prepare(src, canonical_url(vid), req.analysis, request)
 
-    def _start_prepare(src: Source, url: str, analysis: AnalyzeOptions, key: str | None) -> SourceCreated:
+    def _start_prepare(src: Source, url: str, analysis: AnalyzeOptions, request: Request) -> SourceCreated:
+        key, model = gemini_key_from(request), gemini_model_from(request)
+
         def run(progress, cancel):
-            return source_pipeline.prepare_source(src, url, analysis, gemini_key=key,
+            return source_pipeline.prepare_source(src, url, analysis, gemini_key=key, gemini_model=model,
                                                   progress=progress, cancel=cancel)  # fmt: skip
 
         job = runner.submit_task("source", run)
@@ -127,7 +135,7 @@ def register(app: FastAPI, runner: JobRunner) -> None:
         if meta and meta.duration > limit_min * 60:
             raise IngestError(f"This video is {meta.duration / 60:.0f} minutes long; the limit is "
                               f"{limit_min:.0f} minutes (MAX_SOURCE_MINUTES).")  # fmt: skip
-        return _start_prepare(src, meta.url if meta else "", opts, gemini_key_from(request))
+        return _start_prepare(src, meta.url if meta else "", opts, request)
 
     @app.post("/api/sources/{source_id}/prepare", response_model=SourceCreated, tags=["sources"])
     def prepare_again(source_id: str, opts: AnalyzeOptions, request: Request) -> SourceCreated:
@@ -139,7 +147,7 @@ def register(app: FastAPI, runner: JobRunner) -> None:
             url = canonical_url(src.id[3:])
         if not url:
             raise HTTPException(409, "Upload the file again.")
-        return _start_prepare(src, url, opts, gemini_key_from(request))
+        return _start_prepare(src, url, opts, request)
 
     @app.get("/api/sources/{source_id}", tags=["sources"])
     def get_source(source_id: str) -> dict[str, Any]:
@@ -154,10 +162,10 @@ def register(app: FastAPI, runner: JobRunner) -> None:
         src = _source(source_id)
         if not src.file("transcript.json").is_file():
             raise HTTPException(409, "This video is still being prepared.")
-        key = gemini_key_from(request)
+        key, model = gemini_key_from(request), gemini_model_from(request)
 
         def run(progress, cancel):
-            return source_pipeline.reanalyze(src, opts, gemini_key=key, progress=progress)
+            return source_pipeline.reanalyze(src, opts, gemini_key=key, gemini_model=model, progress=progress)
 
         job = runner.submit_task("analyze", run)
         return TaskCreated(task_id=job.id)
