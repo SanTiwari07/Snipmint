@@ -30,17 +30,17 @@ export function screenFor(pathname: string, f: FlowState): Screen | null {
       return {
         step: 0,
         back: '/',
-        next: { to: '/moments', label: 'Next: pick the moments', blocked: f.ready ? null : 'Wait until the video is ready.' },
+        next: { to: '/moments', label: 'Pick the moments', blocked: f.ready ? null : 'Wait until the video is ready.' },
       }
     case '/moments':
       return {
         step: 1,
         back: '/source',
-        next: { to: '/captions', label: 'Next: style the captions', blocked: f.selected ? null : 'Pick at least one moment.' },
+        next: { to: '/captions', label: 'Style the captions', blocked: f.selected ? null : 'Pick at least one moment.' },
         rail: true,
       }
     case '/captions':
-      return { step: 2, back: '/moments', next: { to: '/export', label: 'Next: make the clips' }, rail: true }
+      return { step: 2, back: '/moments', next: { to: '/export', label: 'Make the clips' }, rail: true }
     case '/export':
       return { step: 3, back: '/captions', rail: true }
     default:

@@ -2755,3 +2755,16 @@ textarea {
   justify-content: space-between;
   gap: var(--space-sm);
 }
+
+.btn__arrow {
+  flex: none;
+  transition: transform 0.15s ease;
+}
+.btn:not(:disabled):hover .btn__arrow {
+  transform: translateX(3px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn__arrow {
+    transition: none;
+  }
+}

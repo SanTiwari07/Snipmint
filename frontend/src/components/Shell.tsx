@@ -145,6 +145,9 @@ export function StepNav() {
           {next ? (
             <Button variant="primary" className="btn--lg" disabled={!!next.blocked} onClick={() => navigate(next.to)}>
               {next.label}
+              <svg className="btn__arrow" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+                <path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </Button>
           ) : (
             <span className="step-nav__error">Pick one above to continue.</span>
