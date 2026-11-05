@@ -63,6 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check the compose file
+        run: docker compose config --quiet && docker compose --profile gpu --profile ollama config --quiet
       - name: Build the CPU image
         run: docker build -f docker/Dockerfile -t snipmint:ci .
       - name: Smoke test the API
