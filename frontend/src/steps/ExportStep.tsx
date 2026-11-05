@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { api, watchJob } from '../api/client'
-import { type ClipsJob, clipFileUrl, clipsApi, clock } from '../api/clips'
+import { type ClipsJob, FRAMINGS, LAYOUT_LABEL, clipFileUrl, clipsApi, clock } from '../api/clips'
 import { Banner, Button, ProgressBar, Segmented } from '../components/ui'
 import { useCatalog } from '../state/catalog'
 import { selectedClips, useClips } from '../state/clips'
@@ -22,7 +22,7 @@ export function ExportStep() {
   const styles = useCatalog((s) => s.styles)
   const formats = useCatalog((s) => s.formats)
   const health = useCatalog((s) => s.health)
-  const { source, selected, edits, sourceId, captionsEnabled, quality, jobId, patch } = useClips()
+  const { source, selected, edits, sourceId, captionsEnabled, quality, framing, jobId, patch } = useClips()
   const clips = useMemo(() => selectedClips({ source, selected, edits }), [source, selected, edits])
   const [job, setJob] = useState<ClipsJob | null>(null)
   const [live, setLive] = useState<Live | null>(null)
@@ -50,7 +50,7 @@ export function ExportStep() {
         captions: { preset: draft.captions.preset, overrides: draft.captions.overrides, font: draft.captions.font },
         captions_enabled: captionsEnabled,
         format: draft.format,
-        framing: 'center',
+        framing,
         export: { quality },
       })
       setRunning(job_id)
@@ -180,6 +180,12 @@ export function ExportStep() {
                   <span className="field__hint">
                     {clock(o.start)}–{clock(o.end)} · {Math.round(o.end - o.start)} s
                   </span>
+                  {o.layout && (
+                    <span className="field__hint" title={o.framing_note ?? undefined}>
+                      {LAYOUT_LABEL[o.layout] ?? o.layout}
+                      {o.framing_note?.includes('Black bars') ? ' · black bars removed' : ''}
+                    </span>
+                  )}
                   {o.video && (
                     <div className="row">
                       <a className="btn btn--primary" href={clipFileUrl(job.id, o.video, true)} download>
@@ -206,6 +212,22 @@ export function ExportStep() {
         </section>
       )}
 
+      <section className="section" aria-labelledby="framing-title">
+        <div className="section__head">
+          <h2 className="section__title" id="framing-title">
+            Framing
+          </h2>
+          <p className="section__hint">How the wide video becomes vertical. Black bars are always removed.</p>
+        </div>
+        <Segmented
+          label="Framing"
+          value={framing}
+          onChange={(f) => patch({ framing: f })}
+          items={FRAMINGS.map((f) => ({ id: f.id, label: f.label, hint: f.hint }))}
+        />
+        <p className="field__hint">{FRAMINGS.find((f) => f.id === framing)?.hint}</p>
+      </section>
+
       <section className="section" aria-labelledby="quality-title">
         <h2 className="section__title" id="quality-title">
           Quality
@@ -220,9 +242,6 @@ export function ExportStep() {
             { id: 'high', label: 'Best' },
           ]}
         />
-        <p className="field__hint">
-          Framing: the centre of the video is kept. Speaker tracking is coming in the next version.
-        </p>
       </section>
 
       <section className="section" aria-labelledby="choices-title">

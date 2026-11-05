@@ -17,6 +17,7 @@ export function PhoneFrame() {
   const edits = useClips((s) => s.edits)
   const moment = useMemo(() => previewMoment({ source, selected, edits }), [source, selected, edits])
   const captionsEnabled = useClips((s) => s.captionsEnabled)
+  const framing = useClips((s) => s.framing)
   const [zones, setZones] = useState(false)
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -32,6 +33,7 @@ export function PhoneFrame() {
           captions,
           captions_enabled: captionsEnabled,
           format: format.id,
+          framing,
         }
       : null
   const key = useDebounced(body ? JSON.stringify(body) : '', 350)

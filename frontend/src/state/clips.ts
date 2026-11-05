@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { type Band, type ClipSpec, type Moment, type SourceState, clipsApi } from '../api/clips'
+import { type Band, type ClipSpec, type Framing, type Moment, type SourceState, clipsApi } from '../api/clips'
 
 export interface ClipsDraft {
   url: string
@@ -12,7 +12,7 @@ export interface ClipsDraft {
   /** Hand-nudged start/end per moment id. */
   edits: Record<string, { start: number; end: number }>
   captionsEnabled: boolean
-  framing: 'center'
+  framing: Framing
   quality: 'fast' | 'balanced' | 'high'
   jobId: string | null
 }
@@ -26,7 +26,7 @@ const DEFAULT: ClipsDraft = {
   selected: [],
   edits: {},
   captionsEnabled: true,
-  framing: 'center',
+  framing: 'auto',
   quality: 'balanced',
   jobId: null,
 }
@@ -94,7 +94,7 @@ export const useClips = create<ClipsStore>()(
     }),
     {
       name: 'snipmint.clips',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => {
         try {
           window.sessionStorage.setItem('snipmint.probe', '1')

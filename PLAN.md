@@ -106,7 +106,7 @@ All providers implement `pick_moments(transcript, signals, meta, opts) -> list[M
 | Storage | Files on disk under `/data` (sources, jobs, projects as JSON). No database |
 | Download | yt-dlp |
 | Speech-to-text | faster-whisper (CTranslate2) |
-| Video analysis | PySceneDetect, OpenCV, MediaPipe (faces); optional Ultralytics YOLO + PyTorch (GPU) |
+| Video analysis | PySceneDetect, OpenCV, OpenCV YuNet (faces); optional Ultralytics YOLO + PyTorch (GPU) |
 | Signals | NumPy (loudness), scikit-learn-free TF-IDF in pure Python |
 | AI (optional) | `google-genai` (Gemini); `httpx` to any OpenAI-compatible server |
 | Captions / render | ASS subtitles + libass inside FFmpeg; Pillow + fontTools for measuring |
@@ -123,7 +123,7 @@ docker-compose.yml
 └─ ollama          (profile ollama) local LLM for the "Local AI" mode
 volumes:
   ./data   → /data           sources, jobs, clips, projects (visible from Windows)
-  models   → /models         whisper / kokoro / mediapipe weights (download once)
+  models   → /models         whisper / kokoro / face-detection weights (download once)
 env: .env  (GEMINI_API_KEY, YOUTUBE_COOKIES_FILE, WHISPER_MODEL, SNIPMINT_TOKEN ...)
 ```
 

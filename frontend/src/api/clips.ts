@@ -4,6 +4,24 @@ export type StageName = 'probe' | 'download' | 'audio' | 'transcribe' | 'signals
 export type StageState = 'pending' | 'running' | 'done' | 'failed' | 'skipped'
 export type ProviderName = 'heuristic' | 'local_llm' | 'gemini'
 export type ProviderChoice = 'auto' | ProviderName
+export type Framing = 'auto' | 'track' | 'split' | 'fit' | 'center'
+
+/** How each finished clip was framed (shown on the result cards). */
+export const LAYOUT_LABEL: Record<string, string> = {
+  track: 'Follows the speaker',
+  split: 'Two people stacked',
+  mixed: 'Two people + close-ups',
+  fit: 'Whole picture',
+  center: 'Centre crop',
+}
+
+export const FRAMINGS: { id: Framing; label: string; hint: string }[] = [
+  { id: 'auto', label: 'Auto', hint: 'Picks for each clip: follow the speaker, two people stacked, or the whole picture.' },
+  { id: 'track', label: 'Follow speaker', hint: 'A vertical window that follows the face of whoever is on screen.' },
+  { id: 'split', label: 'Two people', hint: 'Two people side by side become two stacked halves; close-ups in between follow the speaker.' },
+  { id: 'fit', label: 'Whole picture', hint: 'Nothing is cut off: the full frame over a blurred copy. Good for screens and slides.' },
+  { id: 'center', label: 'Centre', hint: 'A fixed crop from the middle of the picture.' },
+]
 
 export interface SourceMeta {
   id: string
@@ -96,7 +114,7 @@ export interface ClipsRequest {
   captions: CaptionsConfig
   captions_enabled: boolean
   format: string
-  framing: 'center' | 'track' | 'split'
+  framing: Framing
   export: { quality: 'fast' | 'balanced' | 'high' }
 }
 
@@ -109,6 +127,8 @@ export interface ClipOutput {
   video: string | null
   srt: string | null
   error: string | null
+  layout: 'center' | 'track' | 'split' | 'fit' | 'mixed' | null
+  framing_note: string | null
 }
 
 export interface ClipsJob {
@@ -191,6 +211,7 @@ export const clipsApi = {
       captions: CaptionsConfig
       captions_enabled: boolean
       format: string
+      framing: Framing
     },
     signal?: AbortSignal,
   ): Promise<Blob> => (await send('/api/clips/preview', { ...json(body), signal })).blob(),

@@ -11,7 +11,7 @@
 |---|---|
 | 0. Scaffold + Docker | Done. CI green: tests on Windows and Linux, frontend, Docker build + health smoke test |
 | 1. Free MVP | Done. Link → download → Whisper → free moment scoring → center crop → captions → MP4/SRT/titles.json/zip. Web flow: Start, Video, Moments, Captions, Make clips. Tested end to end on a real YouTube video |
-| 2. Smart framing | Not started (speaker tracking, split layout, letterbox removal) |
+| 2. Smart framing | Done. Black-bar removal, YuNet face tracking with a calm camera (cuts at scene changes), two-people split that switches to the speaker during close-ups (per scene), whole-picture "fit" for screens, Auto choice per clip, framing picker in the UI. Tested on real videos (speech, screen recording, two-shot interview). Single-clip caption re-render not started |
 | 3. Advanced AI | Backend done: Gemini two-pass provider, key check, redaction, fallback; Free/Advanced switch and key field in the UI. Layout picker not started |
 | 4. Extras | Local AI provider done; upload, cookies UI, silent-video vision, hook voice-over not started |
 
@@ -50,7 +50,7 @@ dependencies = [
 ]
 [project.optional-dependencies]
 server  = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "sse-starlette>=2", "python-multipart>=0.0.9"]
-reframe = ["mediapipe>=0.10.14"]
+reframe = ["opencv-python-headless>=4.9"]
 gemini  = ["google-genai>=1.0"]
 voice   = ["edge-tts>=7.2", "kokoro-onnx>=0.6"]
 clone   = ["chatterbox-tts>=0.1.7", "setuptools<81"]
@@ -354,7 +354,7 @@ Keep NarraReel's styles, `ui.tsx` components, `PhoneFrame`, `Toasts` and accessi
   - `gpu_decode`, `gpu_render` and `osrender` (use the CPU ffmpeg path)
   - `camera_inset`, `punch_in`, `screencast_layout`, `layout_ranges`: later, if needed
   - watermark arguments
-- **Face detection:** MediaPipe. YOLO person fallback only when `[gpu]` is installed (`detect_person_yolo`).
+- **Face detection:** OpenCV YuNet (MediaPipe 1.x dropped its face detector). No face model or OpenCV: centre crop.
 - **Interface:** `reframe(source, start, end, fmt, mode) -> clip_raw.mp4`, with `mode ∈ {center, track, split}`.
 - If tracking fails, fall back to center and log a warning event.
 

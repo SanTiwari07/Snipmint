@@ -28,6 +28,10 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("SNIPMINT_HOME", str(tmp_path / "home"))
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("LLM_BASE_URL", raising=False)
+    # keep the API test offline: no face-model download, so framing falls back to a centre crop
+    from snipmint.reframe import faces
+
+    monkeypatch.setattr(faces, "available", lambda: False)
     runner = JobRunner(tmp_path / "jobs")
     with TestClient(create_app(runner=runner, static_dir=tmp_path / "no-ui")) as c:
         yield c

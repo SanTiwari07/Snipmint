@@ -111,7 +111,7 @@ Priority: **P0** = MVP, **P1** = v1, **P2** = later.
 | ID | Requirement | Pri |
 |---|---|---|
 | RF-1 | **Center crop** to 9:16 | P0 |
-| RF-2 | **Auto track:** follow the active speaker's face (MediaPipe) | P1 |
+| RF-2 | **Auto track:** follow the active speaker's face (OpenCV YuNet) | P1 |
 | RF-3 | **Split:** two speakers stacked, for podcasts | P1 |
 | RF-4 | Advanced: Gemini layout picker chooses Track / Split / Screencast from 12 frames | P1 |
 | RF-5 | Sources that are already vertical skip reframing | P0 |

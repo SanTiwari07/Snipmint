@@ -32,6 +32,12 @@ PSF, MPL-2.0, HPND/MIT-CMU or LGPL.
 | `[clone]` | PyTorch, torchaudio | BSD-3-Clause | ML runtime |
 | `[server]` | FastAPI, Starlette | MIT / BSD-3-Clause | Web API |
 | `[server]` | uvicorn, sse-starlette, python-multipart | BSD-3-Clause / BSD-3-Clause / Apache-2.0 | Web server pieces |
+| core | yt-dlp | Unlicense | Downloading the source video from YouTube |
+| core | httpx | BSD-3-Clause | Calls to a local AI server |
+| `[transcribe]` | faster-whisper | MIT | Transcribing the source video with word timings |
+| `[scenes]` | PySceneDetect | BSD-3-Clause | Camera-cut detection |
+| `[scenes]`, `[reframe]` | opencv-python-headless | Apache-2.0 | Face detection (YuNet) and frame handling |
+| `[gemini]` | google-genai | Apache-2.0 | Advanced mode (Gemini API) |
 
 **Why GPL inside an optional extra is fine:** GPL is an open-source licence. The concern is
 distributing a *combined* work. Snipmint never copies GPL code into its repository; users who
@@ -46,6 +52,7 @@ GPL licence texts and a pointer to the espeak-ng and phonemizer sources.
 | Kokoro-82M weights (ONNX export) | Apache-2.0 | https://huggingface.co/hexgrad/Kokoro-82M , ONNX files from https://github.com/thewh1teagle/kokoro-onnx/releases |
 | Whisper `base` (via faster-whisper, CTranslate2 conversion) | MIT | https://huggingface.co/Systran/faster-whisper-base |
 | Chatterbox weights (Phase 4) | MIT | https://huggingface.co/ResembleAI/chatterbox |
+| YuNet face detector (`face_detection_yunet_2023mar.onnx`) | MIT | https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet |
 
 Chatterbox output carries Resemble AI's Perth watermark. Snipmint keeps it enabled.
 
