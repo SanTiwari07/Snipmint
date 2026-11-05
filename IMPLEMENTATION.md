@@ -5,6 +5,16 @@
 | **Date** | 2026-11-05 |
 | **Related** | [PRD.md](PRD.md) (requirements, IDs like `AN-1`) · [PLAN.md](PLAN.md) (architecture) |
 
+## Progress
+
+| Phase | Status |
+|---|---|
+| 0. Scaffold + Docker | Done. CI green: tests on Windows and Linux, frontend, Docker build + health smoke test |
+| 1. Free MVP | Done. Link → download → Whisper → free moment scoring → center crop → captions → MP4/SRT/titles.json/zip. Web flow: Start, Video, Moments, Captions, Make clips. Tested end to end on a real YouTube video |
+| 2. Smart framing | Not started (speaker tracking, split layout, letterbox removal) |
+| 3. Advanced AI | Backend done: Gemini two-pass provider, key check, redaction, fallback; Free/Advanced switch and key field in the UI. Layout picker not started |
+| 4. Extras | Local AI provider done; upload, cookies UI, silent-video vision, hook voice-over not started |
+
 **How to use this doc:**
 - Work the phases in order. Each task lists the files it touches, what it ports (if anything), and how to check it.
 - A phase is done when its **acceptance check** passes in Docker.
