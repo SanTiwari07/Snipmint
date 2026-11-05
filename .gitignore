@@ -36,3 +36,4 @@ snipmint/server/static/*
 .DS_Store
 Thumbs.db
 graphify-out/
+.venv312/

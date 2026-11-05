@@ -53,6 +53,7 @@ from ..pipeline.speak import preview_audio
 from ..project import ProjectConfig
 from ..script import analyze_script, format_duration, parse_duration, plan
 from ..script import duration as dur
+from . import clips_api
 from . import schemas as S
 
 log = logging.getLogger("snipmint.server")
@@ -186,6 +187,7 @@ def create_app(
     @app.get("/api/health", response_model=S.HealthResponse, tags=["system"])
     def health() -> S.HealthResponse:
         from ..timing import align
+        from ..transcribe import whisper
 
         have = ff.available()
         return S.HealthResponse(
@@ -196,6 +198,8 @@ def create_app(
             libass=ff.has_libass() if have else False,
             align_available=align.is_available(),
             auth_required=bool(token),
+            transcribe_available=whisper.is_available(),
+            ai=clips_api.ai_status(),
         )
 
     # ------------------------------------------------------------- engines
@@ -606,6 +610,10 @@ def create_app(
             except (OSError, ValueError):
                 pass
         return FileResponse(path, media_type=media, filename=filename)
+
+    # ------------------------------------------------- sources and clips
+
+    clips_api.register(app, runner)
 
     # -------------------------------------------------------------- static
 

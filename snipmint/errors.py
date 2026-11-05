@@ -42,3 +42,11 @@ class ModelDownloadError(SnipmintError):
 
 class JobCancelled(SnipmintError):
     """The user cancelled a running job."""
+
+
+class IngestError(SnipmintError):
+    """The video link is invalid, or the video could not be fetched."""
+
+
+class AnalysisError(SnipmintError):
+    """Transcription or moment analysis failed."""

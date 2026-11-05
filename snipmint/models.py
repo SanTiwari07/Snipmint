@@ -135,7 +135,10 @@ class SynthesisResult(BaseModel):
 
 
 class ProgressEvent(BaseModel):
-    stage: Literal["prepare", "voice", "timing", "captions", "render", "done", "error"]
+    stage: Literal[
+        "prepare", "voice", "timing", "captions", "render", "done", "error",
+        "probe", "download", "audio", "transcribe", "signals", "analyze", "cut",
+    ]
     fraction: float = 0.0
     message: str = ""
     detail: dict[str, Any] = Field(default_factory=dict)

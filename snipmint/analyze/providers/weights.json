@@ -1,0 +1,10 @@
+{
+  "_comment": "Weights of the free moment picker. They are renormalised when a video has no heatmap.",
+  "heatmap": 0.30,
+  "hook": 0.20,
+  "energy": 0.15,
+  "density": 0.15,
+  "complete": 0.10,
+  "pace": 0.05,
+  "cuts": 0.05
+}

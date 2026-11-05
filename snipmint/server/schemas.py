@@ -24,6 +24,8 @@ class HealthResponse(BaseModel):
     align_available: bool
     auth_required: bool = False
     demo: bool = False
+    transcribe_available: bool = False
+    ai: dict[str, bool] = Field(default_factory=dict)
 
 
 class AnalyzeRequest(BaseModel):

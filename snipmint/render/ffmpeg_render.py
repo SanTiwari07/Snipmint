@@ -42,6 +42,12 @@ class RenderSpec:
     fonts_dir: str = "fonts"
     audio: str | None = "voice.wav"
     output: str | None = None
+    # Clips cut from a source video: read the background from ``background_start`` for
+    # ``duration`` seconds, keep that video's own audio, and optionally replace the default
+    # cover-crop with a custom filter (e.g. speaker tracking).
+    background_start: float | None = None
+    audio_from_background: bool = False
+    video_filter: str | None = None
 
 
 _X264 = {"fast": ("veryfast", 23), "balanced": ("medium", 20), "high": ("slow", 17)}
@@ -62,7 +68,7 @@ def _bg_input(spec: RenderSpec, duration: float) -> tuple[list[str], str]:
         return ["-f", "lavfi", "-i", f"color=c={_color_hex(spec.color)}:s={size}:r={spec.fps}:d={duration:.3f}"], ""
     if not spec.background_file:
         raise FFmpegError(f"A {spec.background} background needs a file.")
-    fit = (
+    fit = spec.video_filter or (
         f"scale={spec.width}:{spec.height}:force_original_aspect_ratio=increase,"
         f"crop={spec.width}:{spec.height},setsar=1"
     )
@@ -74,6 +80,8 @@ def _bg_input(spec: RenderSpec, duration: float) -> tuple[list[str], str]:
     if spec.background == "image":
         args = ["-loop", "1", "-framerate", str(spec.fps), "-t", f"{duration:.3f}",
                 "-i", spec.background_file]  # fmt: skip
+    elif spec.background_start is not None:
+        args = ["-ss", f"{spec.background_start:.3f}", "-t", f"{duration:.3f}", "-i", spec.background_file]
     else:
         args = ["-stream_loop", "-1", "-t", f"{duration:.3f}", "-i", spec.background_file]
     return args, fit + extras + f",fps={spec.fps}"
@@ -97,6 +105,9 @@ def build_command(spec: RenderSpec, output: str) -> list[str]:
     if spec.audio:
         args += ["-i", spec.audio]
     args += ["-vf", ",".join(chain)]
+    with_audio = bool(spec.audio) or spec.audio_from_background
+    if spec.audio_from_background and not spec.audio:
+        args += ["-map", "0:v:0", "-map", "0:a:0?"]
 
     if spec.container == "mp4":
         if transparent:
@@ -118,6 +129,8 @@ def build_command(spec: RenderSpec, output: str) -> list[str]:
         audio_codec = ["-c:a", "pcm_s16le"]
     if spec.audio:
         args += [*audio_codec, "-shortest"]
+    elif with_audio:
+        args += [*audio_codec]
     else:
         args += ["-an"]
     args += ["-t", f"{spec.duration:.3f}", "-r", str(spec.fps)]
@@ -193,9 +206,17 @@ def render_frame(
 ) -> Path:
     """A single PNG frame at time ``at`` using exactly the same filter graph as the video."""
     job_dir = Path(job_dir)
-    frame_spec = RenderSpec(**{**spec.__dict__, "duration": at + 0.5, "audio": None})
+    frame_spec = RenderSpec(**{**spec.__dict__, "duration": at + 0.5, "audio": None,
+                               "audio_from_background": False})  # fmt: skip
     bg_args, bg_filter = _bg_input(frame_spec, frame_spec.duration)
     chain = [c for c in (bg_filter.lstrip(","), _subtitles_filter(frame_spec)) if c]
-    args = [*bg_args, "-vf", ",".join(chain), "-ss", f"{at:.3f}", "-frames:v", "1", output]
+    if frame_spec.background_start is not None:
+        # seek the source to the frame itself (fast), then draw the captions as of time ``at``
+        bg_args = ["-ss", f"{frame_spec.background_start + at:.3f}", "-i", str(frame_spec.background_file)]
+        chain = [c for c in (bg_filter.lstrip(","), f"setpts=PTS-STARTPTS+{at:.3f}/TB",
+                             _subtitles_filter(frame_spec)) if c]  # fmt: skip
+        args = [*bg_args, "-vf", ",".join(chain), "-frames:v", "1", output]
+    else:
+        args = [*bg_args, "-vf", ",".join(chain), "-ss", f"{at:.3f}", "-frames:v", "1", output]
     run_ffmpeg(args, cwd=job_dir, timeout=60)
     return job_dir / output

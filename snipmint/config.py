@@ -43,6 +43,11 @@ def jobs_dir() -> Path:
     return _sub("jobs")
 
 
+def sources_dir() -> Path:
+    """Downloaded videos, transcripts and analysis results, one folder per source."""
+    return _sub("sources")
+
+
 def user_fonts_dir() -> Path:
     path = home_dir() / "fonts" / "user"
     path.mkdir(parents=True, exist_ok=True)

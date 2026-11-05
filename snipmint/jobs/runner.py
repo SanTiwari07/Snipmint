@@ -194,6 +194,29 @@ class JobRunner:
         self._queue.put((job, run))
         return job
 
+    def submit_in_workspace(
+        self,
+        kind: str,
+        fn: Callable[[Workspace, Callable[[ProgressEvent], None], threading.Event], dict[str, Any] | None],
+        *,
+        inputs: dict[str, Any] | None = None,
+    ) -> Job:
+        """Queue a task that writes its outputs into a fresh job folder (e.g. rendered clips)."""
+        ws = Workspace.create(self.jobs_base)
+        job = Job(id=ws.id, kind=kind, workspace=ws)
+        if inputs is not None:
+            ws.write_json("job.input.json", inputs)
+
+        def run(progress, cancel):
+            with ws.logging():
+                return fn(ws, progress, cancel)
+
+        self._register(job)
+        self._ensure_worker()
+        self._persist(job)
+        self._queue.put((job, run))
+        return job
+
     def submit_task(self, kind: str, fn: TaskFn) -> Job:
         """Queue any long-running task (e.g. a model download)."""
         job = Job(id=f"{kind}-{int(time.time() * 1000):x}", kind=kind)
