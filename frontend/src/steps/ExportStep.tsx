@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { api, watchJob } from '../api/client'
 import { type ClipsJob, FRAMINGS, LAYOUT_LABEL, clipFileUrl, clipsApi, clock } from '../api/clips'
-import { Banner, Button, ProgressBar, Segmented } from '../components/ui'
+import { Banner, Button, ProgressBar, Segmented, Switch } from '../components/ui'
 import { useCatalog } from '../state/catalog'
 import { selectedClips, useClips } from '../state/clips'
 import { useDraft } from '../state/project'
@@ -22,7 +22,7 @@ export function ExportStep() {
   const styles = useCatalog((s) => s.styles)
   const formats = useCatalog((s) => s.formats)
   const health = useCatalog((s) => s.health)
-  const { source, selected, edits, sourceId, captionsEnabled, quality, framing, jobId, patch } = useClips()
+  const { source, selected, edits, sourceId, captionsEnabled, quality, loudness, framing, jobId, patch } = useClips()
   const clips = useMemo(() => selectedClips({ source, selected, edits }), [source, selected, edits])
   const [job, setJob] = useState<ClipsJob | null>(null)
   const [live, setLive] = useState<Live | null>(null)
@@ -51,7 +51,7 @@ export function ExportStep() {
         captions_enabled: captionsEnabled,
         format: draft.format,
         framing,
-        export: { quality },
+        export: { quality, loudness },
       })
       setRunning(job_id)
       patch({ jobId: job_id })
@@ -241,6 +241,12 @@ export function ExportStep() {
             { id: 'balanced', label: 'Balanced' },
             { id: 'high', label: 'Best' },
           ]}
+        />
+        <Switch
+          label="Level the volume"
+          hint="Brings every clip to -14 LUFS, the loudness TikTok, Reels and Shorts play at."
+          checked={loudness}
+          onChange={(v) => patch({ loudness: v })}
         />
       </section>
 

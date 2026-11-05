@@ -231,3 +231,16 @@ def test_mixed_captions_switch_placement_per_shot():
         y = int(ln.split(r"\pos(")[1].split(")")[0].split(",")[1])
         ys.setdefault("split" if start < "0:00:05" else "track", set()).add(y)
     assert ys["split"] and ys["track"] and ys["split"].isdisjoint(ys["track"])
+
+
+def test_loudness_filter_reaches_ffmpeg():
+    from snipmint.pipeline.clips import LOUDNORM
+    from snipmint.render.ffmpeg_render import build_command
+
+    spec = RenderSpec(width=1080, height=1920, fps=30, duration=10, background="video", background_file="s.mp4",
+                      background_start=5.0, audio=None, audio_from_background=True, audio_filter=LOUDNORM)  # fmt: skip
+    args = build_command(spec, "out.mp4")
+    assert args[args.index("-af") + 1] == LOUDNORM
+    assert "0:a:0?" in args
+    spec.audio_filter = None
+    assert "-af" not in build_command(spec, "out.mp4")

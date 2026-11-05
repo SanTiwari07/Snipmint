@@ -14,6 +14,7 @@ export interface ClipsDraft {
   captionsEnabled: boolean
   framing: Framing
   quality: 'fast' | 'balanced' | 'high'
+  loudness: boolean
   jobId: string | null
 }
 
@@ -28,6 +29,7 @@ const DEFAULT: ClipsDraft = {
   captionsEnabled: true,
   framing: 'auto',
   quality: 'balanced',
+  loudness: true,
   jobId: null,
 }
 
@@ -105,8 +107,8 @@ export const useClips = create<ClipsStore>()(
         }
       }),
       partialize: (s) => {
-        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, jobId } = s
-        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, jobId }
+        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, jobId } = s
+        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, jobId }
       },
     },
   ),

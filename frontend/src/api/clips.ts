@@ -1,4 +1,4 @@
-import { getJson, json, mediaUrl, send } from './client'
+import { ApiError, getJson, getToken, json, mediaUrl, send } from './client'
 
 export type StageName = 'probe' | 'download' | 'audio' | 'transcribe' | 'signals' | 'analyze'
 export type StageState = 'pending' | 'running' | 'done' | 'failed' | 'skipped'
@@ -115,7 +115,7 @@ export interface ClipsRequest {
   captions_enabled: boolean
   format: string
   framing: Framing
-  export: { quality: 'fast' | 'balanced' | 'high' }
+  export: { quality: 'fast' | 'balanced' | 'high'; loudness: boolean }
 }
 
 export interface ClipOutput {
@@ -215,6 +215,35 @@ export const clipsApi = {
     },
     signal?: AbortSignal,
   ): Promise<Blob> => (await send('/api/clips/preview', { ...json(body), signal })).blob(),
+  prepare: (id: string, opts: AnalyzeOptions) =>
+    postWithAi<{ source_id: string; task_id: string }>(`/api/sources/${encodeURIComponent(id)}/prepare`, opts),
+  /** Upload a video file with progress (fetch cannot report upload progress, XHR can). */
+  upload: (file: File, analysis: AnalyzeOptions, onProgress: (fraction: number) => void) =>
+    new Promise<{ source_id: string; task_id: string }>((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', '/api/sources/upload')
+      const token = getToken()
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      for (const [k, v] of Object.entries(aiHeaders())) xhr.setRequestHeader(k, v)
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(e.loaded / e.total)
+      }
+      xhr.onload = () => {
+        let body: { error?: string; type?: string } & Record<string, unknown> = {}
+        try {
+          body = JSON.parse(xhr.responseText)
+        } catch {
+          /* not JSON */
+        }
+        if (xhr.status >= 200 && xhr.status < 300) resolve(body as { source_id: string; task_id: string })
+        else reject(new ApiError(body.error ?? `The upload failed (${xhr.status}).`, xhr.status, body.type ?? 'HTTPError'))
+      }
+      xhr.onerror = () => reject(new ApiError('Could not reach the Snipmint server.', 0, 'NetworkError'))
+      const form = new FormData()
+      form.append('file', file)
+      form.append('analysis', JSON.stringify(analysis))
+      xhr.send(form)
+    }),
   createClips: (req: ClipsRequest) => postWithAi<{ job_id: string }>('/api/clips', req),
   job: (id: string) => getJson<ClipsJob>(`/api/jobs/${id}`),
   checkKey: async (key: string): Promise<{ ok: boolean; error: string | null }> => {

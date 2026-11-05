@@ -127,3 +127,47 @@ def test_analyze_preview_and_render(client, source):
     assert len(titles["clips"]) == 2
     assert client.get(f"/api/clips/{job['id']}/files/clips.zip").status_code == 200
     assert client.get(f"/api/clips/{job['id']}/files/../secret").status_code == 404
+
+
+def _make_video(path, audio=True, seconds=20):
+    args = ["-f", "lavfi", "-i", f"testsrc2=size=640x360:rate=25:duration={seconds}"]
+    if audio:
+        args += ["-f", "lavfi", "-i", f"sine=frequency=440:duration={seconds}"]
+    args += ["-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p"]
+    args += ["-c:a", "aac", "-shortest"] if audio else ["-an"]
+    ff.run_ffmpeg([*args, str(path)])
+    return path
+
+
+def test_upload_runs_the_pipeline_without_download(client, tmp_path, monkeypatch):
+    from snipmint.transcribe import whisper
+
+    sentences = [f"This is sentence number {i} about money and time." for i in range(10)]
+    monkeypatch.setattr(whisper, "transcribe", lambda *a, **k: make_transcript(sentences, word_dur=0.3, gap=0.3))
+    video = _make_video(tmp_path / "talk.mkv")
+    with video.open("rb") as fh:
+        r = client.post("/api/sources/upload", files={"file": ("My Talk.mkv", fh, "video/x-matroska")},
+                        data={"analysis": json.dumps({"provider": "heuristic", "min_seconds": 5,
+                                                      "max_seconds": 10, "count": 2})})  # fmt: skip
+    assert r.status_code == 200, r.text
+    sid = r.json()["source_id"]
+    assert sid.startswith("up-")
+    assert wait_for(client, r.json()["task_id"])["status"] == "done"
+    state = client.get(f"/api/sources/{sid}").json()
+    assert state["meta"]["title"] == "My Talk" and state["meta"]["url"] == "file:My Talk.mkv"
+    assert len(state["analysis"]["moments"]) == 2
+    assert client.get(f"/api/sources/{sid}/video").headers["content-type"] == "video/mp4"
+    # the same file again maps to the same source; prepare can be re-run
+    r2 = client.post(f"/api/sources/{sid}/prepare", json={"provider": "heuristic"})
+    assert r2.status_code == 200 and r2.json()["source_id"] == sid
+    assert wait_for(client, r2.json()["task_id"])["status"] == "done"
+
+
+def test_upload_rejects_silent_and_non_video_files(client, tmp_path):
+    silent = _make_video(tmp_path / "silent.mp4", audio=False, seconds=3)
+    with silent.open("rb") as fh:
+        r = client.post("/api/sources/upload", files={"file": ("silent.mp4", fh, "video/mp4")})
+    assert r.status_code == 400 and "sound" in json.dumps(r.json())
+    r = client.post("/api/sources/upload", files={"file": ("notes.txt", b"hello", "text/plain")})
+    assert r.status_code == 400 and "video file" in json.dumps(r.json())
+    assert not list((tmp_path / "home" / "sources").glob(".upload-*"))

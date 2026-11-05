@@ -48,9 +48,14 @@ class ClipSpec(BaseModel):
     descriptions: dict[str, str] = Field(default_factory=dict)
 
 
+LOUDNORM = "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000"
+
+
 class ClipExport(BaseModel):
     quality: Literal["fast", "balanced", "high"] = "balanced"
     fps: int | None = Field(None, ge=10, le=60)
+    # level the sound to -14 LUFS, what TikTok, Reels and Shorts play at
+    loudness: bool = True
 
 
 class ClipsRequest(BaseModel):
@@ -87,7 +92,7 @@ def _spec(source: Source, fmt: VideoFormat, clip: ClipSpec, ass: str | None, exp
         duration=round(clip.end - clip.start, 3), background="video",
         background_file=str(source.video.resolve()), background_start=clip.start,
         audio=None, audio_from_background=True, container="mp4", quality=export.quality,
-        ass=ass or "", video_filter=video_filter,
+        ass=ass or "", video_filter=video_filter, audio_filter=LOUDNORM if export.loudness else None,
     )  # fmt: skip
 
 

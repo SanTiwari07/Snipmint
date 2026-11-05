@@ -25,7 +25,7 @@ interface Live {
 export function SourceStep() {
   const navigate = useNavigate()
   const toast = useSession((s) => s.toast)
-  const { source, taskId, url, band, count, refresh, startSource, sourceError } = useClips()
+  const { source, sourceId, taskId, url, band, count, refresh, sourceError } = useClips()
   const [live, setLive] = useState<Live | null>(null)
   const [retrying, setRetrying] = useState(false)
   const stop = useRef<(() => void) | null>(null)
@@ -65,13 +65,10 @@ export function SourceStep() {
     setRetrying(true)
     try {
       const b = LENGTH_BANDS[band]
-      const created = await clipsApi.createSource(url, {
-        provider: providerFor(getAiMode()),
-        min_seconds: b.min,
-        max_seconds: b.max,
-        count,
-      })
-      startSource(url, created.source_id, created.task_id)
+      const opts = { provider: providerFor(getAiMode()), min_seconds: b.min, max_seconds: b.max, count }
+      const created = sourceId ? await clipsApi.prepare(sourceId, opts) : await clipsApi.createSource(url, opts)
+      useClips.setState({ taskId: created.task_id })
+      setLive({ stage: 'probe', fraction: 0, message: 'Starting' })
     } catch (e) {
       toast('error', e instanceof Error ? e.message : 'Could not start again.')
     } finally {
@@ -117,7 +114,7 @@ export function SourceStep() {
           </div>
         </section>
       ) : (
-        <p className="muted">{url}</p>
+        <p className="muted">{url.startsWith('file:') ? url.slice(5) : url}</p>
       )}
 
       {meta && meta.height !== null && meta.height < 720 && (

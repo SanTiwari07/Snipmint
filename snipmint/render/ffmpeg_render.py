@@ -48,6 +48,7 @@ class RenderSpec:
     background_start: float | None = None
     audio_from_background: bool = False
     video_filter: str | None = None
+    audio_filter: str | None = None  # e.g. loudness levelling, applied to the output audio
 
 
 _X264 = {"fast": ("veryfast", 23), "balanced": ("medium", 20), "high": ("slow", 17)}
@@ -127,6 +128,8 @@ def build_command(spec: RenderSpec, output: str) -> list[str]:
         args += ["-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt",
                  "yuva444p10le" if transparent else "yuv422p10le"]  # fmt: skip
         audio_codec = ["-c:a", "pcm_s16le"]
+    if with_audio and spec.audio_filter:
+        args += ["-af", spec.audio_filter]
     if spec.audio:
         args += [*audio_codec, "-shortest"]
     elif with_audio:

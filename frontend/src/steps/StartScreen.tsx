@@ -1,11 +1,11 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { type AiMode, LENGTH_BANDS, clipsApi, getAiMode, getGeminiKey, providerFor } from '../api/clips'
 import type { Health } from '../api/types'
 import { AiSettings } from '../components/AiSettings'
 import { Logo } from '../components/Shell'
-import { Button } from '../components/ui'
+import { Button, ProgressBar } from '../components/ui'
 import { useClips } from '../state/clips'
 import { useSession } from '../state/session'
 
@@ -20,6 +20,8 @@ export function StartScreen() {
   const [error, setError] = useState<string | null>(null)
   const [mode, setMode] = useState<AiMode>(getAiMode())
   const [health, setHealth] = useState<Health | null>(null)
+  const [uploading, setUploading] = useState<{ name: string; fraction: number } | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     api
@@ -35,7 +37,7 @@ export function StartScreen() {
       setError('Paste a YouTube link first.')
       return
     }
-    if (mode === 'advanced' && !getGeminiKey() && !(health?.ai?.gemini_server_key ?? false)) {
+    if (needsKey()) {
       setError('Advanced mode needs a Gemini API key. Add one below, or switch to Free.')
       return
     }
@@ -56,6 +58,33 @@ export function StartScreen() {
       setError(err instanceof Error ? err.message : 'That link could not be used.')
     } finally {
       setBusy(false)
+    }
+  }
+
+  const needsKey = () =>
+    mode === 'advanced' && !getGeminiKey() && !((health as (Health & { ai?: Record<string, boolean> }) | null)?.ai?.gemini_server_key ?? false)
+
+  const uploadFile = async (file: File) => {
+    if (needsKey()) {
+      setError('Advanced mode needs a Gemini API key. Add one below, or switch to Free.')
+      return
+    }
+    setError(null)
+    setUploading({ name: file.name, fraction: 0 })
+    try {
+      const b = LENGTH_BANDS[band]
+      const created = await clipsApi.upload(
+        file,
+        { provider: providerFor(mode), min_seconds: b.min, max_seconds: b.max, count },
+        (fraction) => setUploading({ name: file.name, fraction }),
+      )
+      startSource(`file:${file.name}`, created.source_id, created.task_id)
+      start()
+      navigate('/source')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'That file could not be used.')
+    } finally {
+      setUploading(null)
     }
   }
 
@@ -114,6 +143,31 @@ export function StartScreen() {
               rights to use.
             </p>
           )}
+          <div className="upload-row">
+            <span className="field__hint">No link? Use a video file from this computer.</span>
+            <Button variant="secondary" disabled={!!uploading || busy} onClick={() => fileRef.current?.click()}>
+              Upload a video
+            </Button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="video/mp4,video/quicktime,video/webm,video/x-matroska,.mkv,.m4v,.avi"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) void uploadFile(f)
+                e.target.value = ''
+              }}
+            />
+          </div>
+          {uploading && (
+            <div className="stack" aria-live="polite">
+              <ProgressBar fraction={uploading.fraction} label="Upload progress" />
+              <span className="field__hint">
+                Uploading {uploading.name}… {Math.round(uploading.fraction * 100)}%
+              </span>
+            </div>
+          )}
           <AiSettings mode={mode} onMode={setMode} health={health} onToast={toast} />
         </form>
 
@@ -121,7 +175,7 @@ export function StartScreen() {
           <div className="start__choices">
             <button type="button" className="start-card" onClick={carryOn}>
               <span className="start-card__title">Continue with your last video</span>
-              <span className="start-card__text">{lastTitle ?? lastUrl}</span>
+              <span className="start-card__text">{lastTitle ?? (lastUrl.startsWith('file:') ? lastUrl.slice(5) : lastUrl)}</span>
               <span className="start-card__go" aria-hidden="true">
                 →
               </span>

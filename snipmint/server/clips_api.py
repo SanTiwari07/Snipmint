@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import os
 import re
+import secrets
+from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 
+from .. import config
 from ..analyze import service
 from ..analyze.schemas import AnalyzeOptions
+from ..errors import IngestError
+from ..ingest import upload as upload_mod
 from ..ingest.guard import canonical_url, source_id_for, youtube_video_id
 from ..ingest.source import Source
 from ..jobs.runner import JobRunner
@@ -83,16 +90,56 @@ def register(app: FastAPI, runner: JobRunner) -> None:
     def create_source(req: SourceRequest, request: Request) -> SourceCreated:
         vid = youtube_video_id(req.url)  # raises IngestError -> 400 with a friendly message
         src = Source(source_id_for(vid))
-        url = canonical_url(vid)
-        key = gemini_key_from(request)
+        return _start_prepare(src, canonical_url(vid), req.analysis, gemini_key_from(request))
 
+    def _start_prepare(src: Source, url: str, analysis: AnalyzeOptions, key: str | None) -> SourceCreated:
         def run(progress, cancel):
-            return source_pipeline.prepare_source(src, url, req.analysis, gemini_key=key,
+            return source_pipeline.prepare_source(src, url, analysis, gemini_key=key,
                                                   progress=progress, cancel=cancel)  # fmt: skip
 
         job = runner.submit_task("source", run)
         src.update_status(lambda st: setattr(st, "task_id", job.id))
         return SourceCreated(source_id=src.id, task_id=job.id)
+
+    @app.post("/api/sources/upload", response_model=SourceCreated, tags=["sources"])
+    async def upload_source(request: Request, file: UploadFile = File(...),
+                            analysis: str = Form("{}")) -> SourceCreated:  # fmt: skip
+        """A video file from this computer instead of a YouTube link."""
+        try:
+            opts = AnalyzeOptions.model_validate(json.loads(analysis or "{}"))
+        except ValueError as exc:
+            raise HTTPException(422, f"Bad analysis options: {exc}") from exc
+        limit = upload_mod.max_upload_bytes()
+        tmp = config.sources_dir() / f".upload-{secrets.token_hex(6)}{Path(file.filename or '').suffix.lower()}"
+        size = 0
+        try:
+            with tmp.open("wb") as out:
+                while chunk := await file.read(4 * 1024 * 1024):
+                    size += len(chunk)
+                    if size > limit:
+                        raise IngestError(f"That file is larger than {limit // (1024 * 1024)} MB (MAX_UPLOAD_MB).")
+                    out.write(chunk)
+            src = await asyncio.to_thread(upload_mod.import_file, tmp, file.filename or "video.mp4")
+        finally:
+            tmp.unlink(missing_ok=True)
+        meta = src.meta
+        limit_min = source_pipeline.max_source_minutes()
+        if meta and meta.duration > limit_min * 60:
+            raise IngestError(f"This video is {meta.duration / 60:.0f} minutes long; the limit is "
+                              f"{limit_min:.0f} minutes (MAX_SOURCE_MINUTES).")  # fmt: skip
+        return _start_prepare(src, meta.url if meta else "", opts, gemini_key_from(request))
+
+    @app.post("/api/sources/{source_id}/prepare", response_model=SourceCreated, tags=["sources"])
+    def prepare_again(source_id: str, opts: AnalyzeOptions, request: Request) -> SourceCreated:
+        """Continue or retry preparing a source (finished steps are kept)."""
+        src = _source(source_id)
+        meta = src.meta
+        url = meta.url if meta else ""
+        if not url and src.id.startswith("yt-"):
+            url = canonical_url(src.id[3:])
+        if not url:
+            raise HTTPException(409, "Upload the file again.")
+        return _start_prepare(src, url, opts, gemini_key_from(request))
 
     @app.get("/api/sources/{source_id}", tags=["sources"])
     def get_source(source_id: str) -> dict[str, Any]:

@@ -87,6 +87,8 @@ def prepare_source(
 
             # ---- download
             current = "download"
+            if not source.video.is_file() and url.startswith("file:"):
+                raise IngestError("The uploaded file is no longer here. Upload it again.")
             if not source.video.is_file():
                 source.set_stage("download", "running")
                 youtube.download(
