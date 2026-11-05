@@ -1,0 +1,24 @@
+name: Feature or preset request
+description: Suggest a feature, caption preset, font, format or voice engine
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for helping improve Snipmint. If it is useful to you, please ⭐ star the repo so more creators find it."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the video you want to make, not the implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+  - type: checkboxes
+    id: licence
+    attributes:
+      label: For fonts, models and engines
+      options:
+        - label: The licence allows commercial use (OFL, Apache-2.0, MIT or similar), for the code and for the model weights.

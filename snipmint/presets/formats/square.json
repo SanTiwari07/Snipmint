@@ -1,0 +1,21 @@
+{
+  "id": "square",
+  "name": "Instagram post (1:1)",
+  "width": 1080,
+  "height": 1080,
+  "fps": 30,
+  "positions": {
+    "top": 0.15,
+    "middle": 0.5,
+    "lower_middle": 0.68,
+    "bottom": 0.84
+  },
+  "max_text_width": 0.86,
+  "safe_zone": {
+    "top": 0.06,
+    "bottom": 0.08,
+    "right": 0.05
+  },
+  "default_style": "bold-pop",
+  "note": "Square 1:1."
+}

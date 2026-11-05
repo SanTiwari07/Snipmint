@@ -1,0 +1,21 @@
+{
+  "id": "portrait",
+  "name": "Instagram portrait (4:5)",
+  "width": 1080,
+  "height": 1350,
+  "fps": 30,
+  "positions": {
+    "top": 0.15,
+    "middle": 0.5,
+    "lower_middle": 0.66,
+    "bottom": 0.82
+  },
+  "max_text_width": 0.86,
+  "safe_zone": {
+    "top": 0.06,
+    "bottom": 0.1,
+    "right": 0.05
+  },
+  "default_style": "bold-pop",
+  "note": "Portrait 4:5."
+}

@@ -1,0 +1,38 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Snipmint runtime data
+.snipmint/
+temp/
+data/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+snipmint/server/static/*
+!snipmint/server/static/.gitkeep
+
+# Generated media (fixtures excepted)
+*.mp4
+*.webm
+*.mov
+*.mp3
+*.wav
+!tests/fixtures/**
+!docs/**
+
+# Secrets / OS
+.env
+.DS_Store
+Thumbs.db
+graphify-out/

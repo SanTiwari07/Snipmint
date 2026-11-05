@@ -1,0 +1,39 @@
+name: Bug report
+description: Something broke or looks wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for helping improve Snipmint. If it is useful to you, please ⭐ star the repo so more creators find it."
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `snipmint doctor`
+      description: Paste the full output, including the Snipmint version on the first line.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did it happen?
+      options: [Web app, Command line, Docker, Colab]
+    validations:
+      required: true
+  - type: input
+    id: voice
+    attributes:
+      label: Voice and caption style
+      placeholder: edge:en-US-AvaNeural, bold-pop, reels
+  - type: textarea
+    id: files
+    attributes:
+      label: Files
+      description: For caption timing problems attach `words.json` and `captions.ass` from the job folder. Do not attach recordings of other people's voices.

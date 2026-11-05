@@ -1,0 +1,352 @@
+[
+  {
+    "id": "montserrat-black",
+    "family": "Montserrat",
+    "style": "Black",
+    "weight": 900,
+    "file": "Montserrat/Montserrat-Black.ttf",
+    "ass_family": "Montserrat Black",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "Montserrat/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Montserrat",
+    "tags": [
+      "bold",
+      "popular"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "montserrat-extrabold",
+    "family": "Montserrat",
+    "style": "ExtraBold",
+    "weight": 800,
+    "file": "Montserrat/Montserrat-ExtraBold.ttf",
+    "ass_family": "Montserrat ExtraBold",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "Montserrat/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Montserrat",
+    "tags": [
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "montserrat-bold",
+    "family": "Montserrat",
+    "style": "Bold",
+    "weight": 700,
+    "file": "Montserrat/Montserrat-Bold.ttf",
+    "ass_family": "Montserrat",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "Montserrat/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Montserrat",
+    "tags": [
+      "bold",
+      "clean"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "anton-regular",
+    "family": "Anton",
+    "style": "Regular",
+    "weight": 400,
+    "file": "Anton/Anton-Regular.ttf",
+    "ass_family": "Anton",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "Anton/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Anton",
+    "tags": [
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "bebas-neue-regular",
+    "family": "Bebas Neue",
+    "style": "Regular",
+    "weight": 400,
+    "file": "BebasNeue/BebasNeue-Regular.ttf",
+    "ass_family": "Bebas Neue",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "BebasNeue/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Bebas+Neue",
+    "tags": [
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "poppins-bold",
+    "family": "Poppins",
+    "style": "Bold",
+    "weight": 700,
+    "file": "Poppins/Poppins-Bold.ttf",
+    "ass_family": "Poppins",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "Poppins/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Poppins",
+    "tags": [
+      "clean",
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "poppins-semibold",
+    "family": "Poppins",
+    "style": "SemiBold",
+    "weight": 600,
+    "file": "Poppins/Poppins-SemiBold.ttf",
+    "ass_family": "Poppins SemiBold",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "Poppins/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Poppins",
+    "tags": [
+      "clean"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "oswald-bold",
+    "family": "Oswald",
+    "style": "Bold",
+    "weight": 700,
+    "file": "Oswald/Oswald-Bold.ttf",
+    "ass_family": "Oswald",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "Oswald/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Oswald",
+    "tags": [
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "archivo-black-regular",
+    "family": "Archivo Black",
+    "style": "Regular",
+    "weight": 400,
+    "file": "ArchivoBlack/ArchivoBlack-Regular.ttf",
+    "ass_family": "Archivo Black",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "ArchivoBlack/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Archivo+Black",
+    "tags": [
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "bangers-regular",
+    "family": "Bangers",
+    "style": "Regular",
+    "weight": 400,
+    "file": "Bangers/Bangers-Regular.ttf",
+    "ass_family": "Bangers",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "Bangers/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Bangers",
+    "tags": [
+      "fun"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "luckiest-guy-regular",
+    "family": "Luckiest Guy",
+    "style": "Regular",
+    "weight": 400,
+    "file": "LuckiestGuy/LuckiestGuy-Regular.ttf",
+    "ass_family": "Luckiest Guy",
+    "ass_bold": false,
+    "license": "Apache-2.0",
+    "license_file": "LuckiestGuy/LICENSE.txt",
+    "source": "https://fonts.google.com/specimen/Luckiest+Guy",
+    "tags": [
+      "fun"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "lilita-one-regular",
+    "family": "Lilita One",
+    "style": "Regular",
+    "weight": 400,
+    "file": "LilitaOne/LilitaOne-Regular.ttf",
+    "ass_family": "Lilita One",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "LilitaOne/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Lilita+One",
+    "tags": [
+      "fun",
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "permanent-marker-regular",
+    "family": "Permanent Marker",
+    "style": "Regular",
+    "weight": 400,
+    "file": "PermanentMarker/PermanentMarker-Regular.ttf",
+    "ass_family": "Permanent Marker",
+    "ass_bold": false,
+    "license": "Apache-2.0",
+    "license_file": "PermanentMarker/LICENSE.txt",
+    "source": "https://fonts.google.com/specimen/Permanent+Marker",
+    "tags": [
+      "handwritten"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "caveat-brush-regular",
+    "family": "Caveat Brush",
+    "style": "Regular",
+    "weight": 400,
+    "file": "CaveatBrush/CaveatBrush-Regular.ttf",
+    "ass_family": "Caveat Brush",
+    "ass_bold": false,
+    "license": "OFL-1.1",
+    "license_file": "CaveatBrush/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Caveat+Brush",
+    "tags": [
+      "handwritten"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "inter-bold",
+    "family": "Inter",
+    "style": "Bold",
+    "weight": 700,
+    "file": "Inter/Inter-Bold.ttf",
+    "ass_family": "Inter",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "Inter/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Inter",
+    "tags": [
+      "clean"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "rubik-bold",
+    "family": "Rubik",
+    "style": "Bold",
+    "weight": 700,
+    "file": "Rubik/Rubik-Bold.ttf",
+    "ass_family": "Rubik",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "Rubik/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Rubik",
+    "tags": [
+      "clean",
+      "fun"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "kanit-bold",
+    "family": "Kanit",
+    "style": "Bold",
+    "weight": 700,
+    "file": "Kanit/Kanit-Bold.ttf",
+    "ass_family": "Kanit",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "Kanit/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Kanit",
+    "tags": [
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "roboto-condensed-bold",
+    "family": "Roboto Condensed",
+    "style": "Bold",
+    "weight": 700,
+    "file": "RobotoCondensed/RobotoCondensed-Bold.ttf",
+    "ass_family": "Roboto Condensed",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "RobotoCondensed/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Roboto+Condensed",
+    "tags": [
+      "clean",
+      "bold"
+    ],
+    "scripts": [
+      "latin"
+    ]
+  },
+  {
+    "id": "noto-sans-devanagari-bold",
+    "family": "Noto Sans Devanagari",
+    "style": "Bold",
+    "weight": 700,
+    "file": "NotoSansDevanagari/NotoSansDevanagari-Bold.ttf",
+    "ass_family": "Noto Sans Devanagari",
+    "ass_bold": true,
+    "license": "OFL-1.1",
+    "license_file": "NotoSansDevanagari/OFL.txt",
+    "source": "https://fonts.google.com/specimen/Noto+Sans+Devanagari",
+    "tags": [
+      "multilingual",
+      "bold"
+    ],
+    "scripts": [
+      "devanagari",
+      "latin"
+    ]
+  }
+]

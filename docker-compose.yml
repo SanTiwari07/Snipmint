@@ -1,0 +1,42 @@
+# Snipmint
+#   docker compose up --build                          CPU (default)
+#   docker compose --profile gpu up --build snipmint-gpu   NVIDIA GPU
+#   docker compose --profile ollama up                 + local LLM for the "Local AI" mode
+# Run either snipmint or snipmint-gpu, not both: they share port 8000.
+
+services:
+  snipmint:
+    build: { context: ., dockerfile: docker/Dockerfile }
+    image: snipmint:latest
+    ports: ["8000:8000"]
+    env_file: { path: .env, required: false }
+    volumes:
+      - ./data:/data
+      - models:/models
+    restart: unless-stopped
+
+  snipmint-gpu:
+    profiles: ["gpu"]
+    build: { context: ., dockerfile: docker/Dockerfile.gpu }
+    image: snipmint:gpu
+    ports: ["8000:8000"]
+    env_file: { path: .env, required: false }
+    volumes:
+      - ./data:/data
+      - models:/models
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+  ollama:
+    profiles: ["ollama"]
+    image: ollama/ollama:0.12.0
+    environment: ["OLLAMA_CONTEXT_LENGTH=16384"]
+    volumes: ["ollama:/root/.ollama"]
+    restart: unless-stopped
+
+volumes:
+  models: {}
+  ollama: {}

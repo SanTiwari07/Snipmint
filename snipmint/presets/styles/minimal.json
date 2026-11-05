@@ -1,0 +1,40 @@
+{
+  "id": "minimal",
+  "name": "Minimal",
+  "version": 1,
+  "font": {
+    "id": "inter-bold",
+    "size": 66,
+    "uppercase": false,
+    "letter_spacing": 0
+  },
+  "colors": {
+    "text": "#FFFFFF",
+    "highlight": "#FFFFFF",
+    "outline": "#000000",
+    "shadow": "#000000CC",
+    "box": null
+  },
+  "outline_width": 2,
+  "shadow_offset": 3,
+  "layout": {
+    "words_per_chunk": 6,
+    "max_lines": 2,
+    "position": "bottom",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "none",
+    "scale": 1.0,
+    "box": false,
+    "box_color": "#FF3B6B",
+    "box_padding": 14
+  },
+  "animation": {
+    "in": "fade",
+    "duration_ms": 150
+  },
+  "emphasis": {
+    "enabled": false
+  }
+}

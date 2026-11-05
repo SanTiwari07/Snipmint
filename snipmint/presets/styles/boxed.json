@@ -1,0 +1,40 @@
+{
+  "id": "boxed",
+  "name": "Boxed",
+  "version": 1,
+  "font": {
+    "id": "poppins-bold",
+    "size": 80,
+    "uppercase": false,
+    "letter_spacing": 0
+  },
+  "colors": {
+    "text": "#FFFFFF",
+    "highlight": "#FFFFFF",
+    "outline": "#000000",
+    "shadow": "#00000000",
+    "box": null
+  },
+  "outline_width": 0,
+  "shadow_offset": 0,
+  "layout": {
+    "words_per_chunk": 3,
+    "max_lines": 2,
+    "position": "lower_middle",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "word",
+    "scale": 1.0,
+    "box": true,
+    "box_color": "#FF3B6B",
+    "box_padding": 9
+  },
+  "animation": {
+    "in": "pop",
+    "duration_ms": 120
+  },
+  "emphasis": {
+    "enabled": false
+  }
+}

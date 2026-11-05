@@ -1,0 +1,40 @@
+{
+  "id": "bold-pop",
+  "name": "Bold Pop",
+  "version": 1,
+  "font": {
+    "id": "montserrat-black",
+    "size": 100,
+    "uppercase": true,
+    "letter_spacing": 0
+  },
+  "colors": {
+    "text": "#FFFFFF",
+    "highlight": "#FFE600",
+    "outline": "#000000",
+    "shadow": "#000000AA",
+    "box": null
+  },
+  "outline_width": 6,
+  "shadow_offset": 3,
+  "layout": {
+    "words_per_chunk": 3,
+    "max_lines": 2,
+    "position": "lower_middle",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "word",
+    "scale": 1.15,
+    "box": false,
+    "box_color": "#FF3B6B",
+    "box_padding": 14
+  },
+  "animation": {
+    "in": "pop",
+    "duration_ms": 120
+  },
+  "emphasis": {
+    "enabled": false
+  }
+}

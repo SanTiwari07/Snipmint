@@ -1,0 +1,40 @@
+{
+  "id": "karaoke",
+  "name": "Karaoke Highlight",
+  "version": 1,
+  "font": {
+    "id": "montserrat-extrabold",
+    "size": 84,
+    "uppercase": false,
+    "letter_spacing": 0
+  },
+  "colors": {
+    "text": "#FFFFFF",
+    "highlight": "#3DFF9A",
+    "outline": "#000000",
+    "shadow": "#000000AA",
+    "box": null
+  },
+  "outline_width": 5,
+  "shadow_offset": 2,
+  "layout": {
+    "words_per_chunk": 6,
+    "max_lines": 2,
+    "position": "lower_middle",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "karaoke",
+    "scale": 1.0,
+    "box": false,
+    "box_color": "#FF3B6B",
+    "box_padding": 14
+  },
+  "animation": {
+    "in": "fade",
+    "duration_ms": 120
+  },
+  "emphasis": {
+    "enabled": false
+  }
+}

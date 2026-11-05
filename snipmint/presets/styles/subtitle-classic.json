@@ -1,0 +1,41 @@
+{
+  "id": "subtitle-classic",
+  "name": "Subtitle Classic",
+  "version": 1,
+  "font": {
+    "id": "roboto-condensed-bold",
+    "size": 58,
+    "uppercase": false,
+    "letter_spacing": 0
+  },
+  "colors": {
+    "text": "#FFFFFF",
+    "highlight": "#FFFFFF",
+    "outline": "#000000",
+    "shadow": "#00000000",
+    "box": "#000000B3"
+  },
+  "outline_width": 10,
+  "shadow_offset": 0,
+  "layout": {
+    "words_per_chunk": 8,
+    "max_lines": 2,
+    "position": "bottom",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "none",
+    "scale": 1.0,
+    "box": false,
+    "box_color": "#FF3B6B",
+    "box_padding": 14
+  },
+  "animation": {
+    "in": "none",
+    "duration_ms": 0
+  },
+  "emphasis": {
+    "enabled": false
+  },
+  "border_style": "box"
+}

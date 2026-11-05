@@ -1,0 +1,40 @@
+{
+  "id": "one-word",
+  "name": "One Word",
+  "version": 1,
+  "font": {
+    "id": "anton-regular",
+    "size": 190,
+    "uppercase": true,
+    "letter_spacing": 2
+  },
+  "colors": {
+    "text": "#FFFFFF",
+    "highlight": "#FFE600",
+    "outline": "#000000",
+    "shadow": "#000000AA",
+    "box": null
+  },
+  "outline_width": 9,
+  "shadow_offset": 4,
+  "layout": {
+    "words_per_chunk": 1,
+    "max_lines": 1,
+    "position": "middle",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "none",
+    "scale": 1.0,
+    "box": false,
+    "box_color": "#FF3B6B",
+    "box_padding": 14
+  },
+  "animation": {
+    "in": "pop",
+    "duration_ms": 100
+  },
+  "emphasis": {
+    "enabled": false
+  }
+}

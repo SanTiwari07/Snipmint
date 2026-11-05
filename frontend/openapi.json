@@ -1,0 +1,2572 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Snipmint",
+    "description": "Script in, Reel out. Local API behind the Snipmint web app.",
+    "version": "0.1.0.dev0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/engines": {
+      "get": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Engines",
+        "operationId": "engines_api_engines_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Engines Api Engines Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/engines/{engine_id}/prepare": {
+      "post": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Prepare Engine",
+        "operationId": "prepare_engine_api_engines__engine_id__prepare_post",
+        "parameters": [
+          {
+            "name": "engine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Engine Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices": {
+      "get": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Voices",
+        "operationId": "voices_api_voices_get",
+        "parameters": [
+          {
+            "name": "engine",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Engine"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Language"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Voices Api Voices Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/{engine}/{voice_id}/sample": {
+      "get": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Voice Sample",
+        "operationId": "voice_sample_api_voices__engine___voice_id__sample_get",
+        "parameters": [
+          {
+            "name": "engine",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Engine"
+            }
+          },
+          {
+            "name": "voice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Voice Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/guided-text": {
+      "get": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Guided Text",
+        "operationId": "guided_text_api_voices_guided_text_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Guided Text Api Voices Guided Text Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/clone/check": {
+      "post": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Clone Check",
+        "operationId": "clone_check_api_voices_clone_check_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_clone_check_api_voices_clone_check_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/clone": {
+      "post": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Clone Voice",
+        "operationId": "clone_voice_api_voices_clone_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_clone_voice_api_voices_clone_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/custom": {
+      "get": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Custom Voices",
+        "operationId": "custom_voices_api_voices_custom_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VoiceProfile"
+                  },
+                  "type": "array",
+                  "title": "Response Custom Voices Api Voices Custom Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/custom/{voice_id}": {
+      "delete": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Delete Custom Voice",
+        "operationId": "delete_custom_voice_api_voices_custom__voice_id__delete",
+        "parameters": [
+          {
+            "name": "voice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Voice Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Delete Custom Voice Api Voices Custom  Voice Id  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/custom/{voice_id}/reference.mp3": {
+      "get": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Custom Reference",
+        "operationId": "custom_reference_api_voices_custom__voice_id__reference_mp3_get",
+        "parameters": [
+          {
+            "name": "voice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Voice Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/custom/{voice_id}/export": {
+      "get": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Export Custom Voice",
+        "operationId": "export_custom_voice_api_voices_custom__voice_id__export_get",
+        "parameters": [
+          {
+            "name": "voice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Voice Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/custom/import": {
+      "post": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Import Custom Voice",
+        "operationId": "import_custom_voice_api_voices_custom_import_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_custom_voice_api_voices_custom_import_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analyze": {
+      "post": {
+        "tags": [
+          "script"
+        ],
+        "summary": "Analyze",
+        "operationId": "analyze_api_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plan": {
+      "post": {
+        "tags": [
+          "script"
+        ],
+        "summary": "Make Plan",
+        "operationId": "make_plan_api_plan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/duration/parse": {
+      "post": {
+        "tags": [
+          "script"
+        ],
+        "summary": "Parse",
+        "operationId": "parse_api_duration_parse_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParseDurationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParseDurationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preview/voice": {
+      "post": {
+        "tags": [
+          "preview"
+        ],
+        "summary": "Preview Voice",
+        "operationId": "preview_voice_api_preview_voice_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoicePreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preview/frame": {
+      "post": {
+        "tags": [
+          "preview"
+        ],
+        "summary": "Preview Frame Route",
+        "operationId": "preview_frame_route_api_preview_frame_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FramePreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fonts": {
+      "get": {
+        "tags": [
+          "captions"
+        ],
+        "summary": "List Fonts",
+        "operationId": "list_fonts_api_fonts_get",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tag"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Fonts Api Fonts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "captions"
+        ],
+        "summary": "Upload Font",
+        "operationId": "upload_font_api_fonts_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_font_api_fonts_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Upload Font Api Fonts Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fonts/{font_id}/preview.png": {
+      "get": {
+        "tags": [
+          "captions"
+        ],
+        "summary": "Font Preview",
+        "operationId": "font_preview_api_fonts__font_id__preview_png_get",
+        "parameters": [
+          {
+            "name": "font_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Font Id"
+            }
+          },
+          {
+            "name": "text",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80,
+              "default": "THIS IS YOUR CAPTION",
+              "title": "Text"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/presets/styles": {
+      "get": {
+        "tags": [
+          "captions"
+        ],
+        "summary": "Styles",
+        "operationId": "styles_api_presets_styles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Styles Api Presets Styles Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "captions"
+        ],
+        "summary": "Save Style",
+        "operationId": "save_style_api_presets_styles_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StylePresetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Save Style Api Presets Styles Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/presets/formats": {
+      "get": {
+        "tags": [
+          "captions"
+        ],
+        "summary": "Formats",
+        "operationId": "formats_api_presets_formats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Formats Api Presets Formats Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/backgrounds": {
+      "post": {
+        "tags": [
+          "captions"
+        ],
+        "summary": "Upload Background",
+        "operationId": "upload_background_api_backgrounds_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_background_api_backgrounds_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project/validate": {
+      "post": {
+        "tags": [
+          "project"
+        ],
+        "summary": "Validate Project",
+        "operationId": "validate_project_api_project_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateProjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectConfig"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/jobs": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Create Job",
+        "operationId": "create_job_api_jobs_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Recent Jobs",
+        "operationId": "recent_jobs_api_jobs_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Recent Jobs Api Jobs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Job Status",
+        "operationId": "job_status_api_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Job Status Api Jobs  Job Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/jobs/{job_id}/events": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Job Events",
+        "operationId": "job_events_api_jobs__job_id__events_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks/{task_id}/events": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Task Events",
+        "operationId": "task_events_api_tasks__task_id__events_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/jobs/{job_id}/cancel": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Cancel Job",
+        "operationId": "cancel_job_api_jobs__job_id__cancel_post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Cancel Job Api Jobs  Job Id  Cancel Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/jobs/{job_id}/rerender": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Rerender",
+        "operationId": "rerender_api_jobs__job_id__rerender_post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/jobs/{job_id}/files/{name}": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Job File",
+        "operationId": "job_file_api_jobs__job_id__files__name__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Download"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyzeRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "voice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice",
+            "description": "engine:voice, used for the speaking-rate estimate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "AnalyzeRequest"
+      },
+      "AnalyzeResponse": {
+        "properties": {
+          "word_count": {
+            "type": "integer",
+            "title": "Word Count"
+          },
+          "char_count": {
+            "type": "integer",
+            "title": "Char Count"
+          },
+          "sentence_count": {
+            "type": "integer",
+            "title": "Sentence Count"
+          },
+          "paragraph_count": {
+            "type": "integer",
+            "title": "Paragraph Count"
+          },
+          "language_hint": {
+            "type": "string",
+            "title": "Language Hint"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/ScriptWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "sentences": {
+            "items": {
+              "$ref": "#/components/schemas/SentenceInfo"
+            },
+            "type": "array",
+            "title": "Sentences"
+          },
+          "estimate": {
+            "$ref": "#/components/schemas/DurationEstimate"
+          },
+          "cps": {
+            "type": "number",
+            "title": "Cps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "word_count",
+          "char_count",
+          "sentence_count",
+          "paragraph_count",
+          "language_hint",
+          "warnings",
+          "sentences",
+          "estimate",
+          "cps"
+        ],
+        "title": "AnalyzeResponse"
+      },
+      "BackgroundConfig": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "solid",
+              "transparent",
+              "image",
+              "video"
+            ],
+            "title": "Type",
+            "default": "solid"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color",
+            "default": "#101010"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "blur": {
+            "type": "number",
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Blur",
+            "default": 0.0
+          },
+          "darken": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Darken",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "title": "BackgroundConfig"
+      },
+      "Body_clone_check_api_voices_clone_check_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_clone_check_api_voices_clone_check_post"
+      },
+      "Body_clone_voice_api_voices_clone_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "consent": {
+            "type": "boolean",
+            "title": "Consent",
+            "default": false
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "name"
+        ],
+        "title": "Body_clone_voice_api_voices_clone_post"
+      },
+      "Body_import_custom_voice_api_voices_custom_import_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_custom_voice_api_voices_custom_import_post"
+      },
+      "Body_upload_background_api_backgrounds_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_background_api_backgrounds_post"
+      },
+      "Body_upload_font_api_fonts_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_font_api_fonts_post"
+      },
+      "CaptionsConfig": {
+        "properties": {
+          "preset": {
+            "type": "string",
+            "title": "Preset",
+            "default": "bold-pop"
+          },
+          "overrides": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Overrides"
+          },
+          "font": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Font"
+          },
+          "keep_emoji": {
+            "type": "boolean",
+            "title": "Keep Emoji",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "CaptionsConfig"
+      },
+      "Check": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warn",
+              "fail"
+            ],
+            "title": "Status"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "status",
+          "detail"
+        ],
+        "title": "Check"
+      },
+      "CloneResult": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/VoiceProfile"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualityReport"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "quality"
+        ],
+        "title": "CloneResult"
+      },
+      "Consent": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "default": "This is my voice, or I have explicit permission from the person whose voice this is. I won't use it to impersonate or deceive anyone."
+          },
+          "at": {
+            "type": "string",
+            "title": "At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted",
+          "at"
+        ],
+        "title": "Consent"
+      },
+      "DurationConfig": {
+        "properties": {
+          "target_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Seconds"
+          },
+          "option": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "edit_script",
+                  "adjust_delivery",
+                  "speed_only"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 2.0,
+                "minimum": 0.5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed"
+          },
+          "pause_scale": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pause Scale"
+          }
+        },
+        "type": "object",
+        "title": "DurationConfig"
+      },
+      "DurationEstimate": {
+        "properties": {
+          "speech_seconds": {
+            "type": "number",
+            "title": "Speech Seconds"
+          },
+          "pause_seconds": {
+            "type": "number",
+            "title": "Pause Seconds"
+          },
+          "total_seconds": {
+            "type": "number",
+            "title": "Total Seconds"
+          },
+          "words_per_minute": {
+            "type": "number",
+            "title": "Words Per Minute"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "calibrated",
+              "default"
+            ],
+            "title": "Basis",
+            "default": "default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "speech_seconds",
+          "pause_seconds",
+          "total_seconds",
+          "words_per_minute"
+        ],
+        "title": "DurationEstimate"
+      },
+      "DurationOption": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "edit_script",
+              "adjust_delivery",
+              "speed_only"
+            ],
+            "title": "Kind"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed"
+          },
+          "pause_scale": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pause Scale"
+          },
+          "words_delta": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Words Delta"
+          },
+          "resulting_seconds": {
+            "type": "number",
+            "title": "Resulting Seconds"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "natural",
+              "noticeable",
+              "strong",
+              "not_recommended"
+            ],
+            "title": "Quality"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "resulting_seconds",
+          "quality",
+          "message"
+        ],
+        "title": "DurationOption"
+      },
+      "DurationPlan": {
+        "properties": {
+          "estimate_1x": {
+            "$ref": "#/components/schemas/DurationEstimate"
+          },
+          "target_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Seconds"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/DurationOption"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "recommended": {
+            "type": "integer",
+            "title": "Recommended",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "estimate_1x",
+          "options"
+        ],
+        "title": "DurationPlan"
+      },
+      "ExportConfig": {
+        "properties": {
+          "video": {
+            "type": "string",
+            "enum": [
+              "mp4",
+              "webm",
+              "mov"
+            ],
+            "title": "Video",
+            "default": "mp4"
+          },
+          "fps": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 60.0,
+                "minimum": 10.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fps"
+          },
+          "loudness_lufs": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": -6.0,
+                "minimum": -30.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loudness Lufs"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "balanced",
+              "high"
+            ],
+            "title": "Quality",
+            "default": "balanced"
+          }
+        },
+        "type": "object",
+        "title": "ExportConfig"
+      },
+      "FramePreviewRequest": {
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/ProjectConfig"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "word_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Word Index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "title": "FramePreviewRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "ffmpeg": {
+            "type": "boolean",
+            "title": "Ffmpeg"
+          },
+          "ffmpeg_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ffmpeg Version"
+          },
+          "libass": {
+            "type": "boolean",
+            "title": "Libass"
+          },
+          "align_available": {
+            "type": "boolean",
+            "title": "Align Available"
+          },
+          "auth_required": {
+            "type": "boolean",
+            "title": "Auth Required",
+            "default": false
+          },
+          "demo": {
+            "type": "boolean",
+            "title": "Demo",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "ffmpeg",
+          "libass",
+          "align_available"
+        ],
+        "title": "HealthResponse"
+      },
+      "JobCreated": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id"
+        ],
+        "title": "JobCreated"
+      },
+      "JobRequest": {
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/ProjectConfig"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "title": "JobRequest"
+      },
+      "ParseDurationRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "ParseDurationRequest"
+      },
+      "ParseDurationResponse": {
+        "properties": {
+          "seconds": {
+            "type": "number",
+            "title": "Seconds"
+          },
+          "formatted": {
+            "type": "string",
+            "title": "Formatted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seconds",
+          "formatted"
+        ],
+        "title": "ParseDurationResponse"
+      },
+      "PlanRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "voice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice"
+          },
+          "target_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Seconds"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target",
+            "description": "e.g. 90s, 6m, 6:00 (used if target_seconds is empty)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "PlanRequest"
+      },
+      "PlanResponse": {
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/DurationPlan"
+          },
+          "cps": {
+            "type": "number",
+            "title": "Cps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan",
+          "cps"
+        ],
+        "title": "PlanResponse"
+      },
+      "ProjectConfig": {
+        "properties": {
+          "snipmint_version": {
+            "type": "string",
+            "title": "Snipmint Version",
+            "default": "0.1.0.dev0"
+          },
+          "script": {
+            "type": "string",
+            "title": "Script"
+          },
+          "duration": {
+            "$ref": "#/components/schemas/DurationConfig"
+          },
+          "voice": {
+            "$ref": "#/components/schemas/VoiceSelection"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format",
+            "default": "reels"
+          },
+          "captions": {
+            "$ref": "#/components/schemas/CaptionsConfig"
+          },
+          "background": {
+            "$ref": "#/components/schemas/BackgroundConfig"
+          },
+          "export": {
+            "$ref": "#/components/schemas/ExportConfig"
+          }
+        },
+        "type": "object",
+        "required": [
+          "script"
+        ],
+        "title": "ProjectConfig"
+      },
+      "QualityReport": {
+        "properties": {
+          "duration": {
+            "type": "number",
+            "title": "Duration"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/Check"
+            },
+            "type": "array",
+            "title": "Checks"
+          },
+          "usable": {
+            "type": "boolean",
+            "title": "Usable",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "duration",
+          "checks"
+        ],
+        "title": "QualityReport"
+      },
+      "ScriptWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "sentence_idx": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sentence Idx"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ScriptWarning"
+      },
+      "SentenceInfo": {
+        "properties": {
+          "idx": {
+            "type": "integer",
+            "title": "Idx"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "words": {
+            "type": "integer",
+            "title": "Words"
+          },
+          "seconds": {
+            "type": "number",
+            "title": "Seconds"
+          },
+          "paragraph_idx": {
+            "type": "integer",
+            "title": "Paragraph Idx"
+          }
+        },
+        "type": "object",
+        "required": [
+          "idx",
+          "text",
+          "words",
+          "seconds",
+          "paragraph_idx"
+        ],
+        "title": "SentenceInfo"
+      },
+      "StylePresetRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "preset": {
+            "type": "string",
+            "title": "Preset",
+            "default": "bold-pop"
+          },
+          "overrides": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Overrides"
+          },
+          "font": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Font"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "StylePresetRequest"
+      },
+      "TaskCreated": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "title": "TaskCreated"
+      },
+      "UploadResult": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "type",
+          "name",
+          "size"
+        ],
+        "title": "UploadResult"
+      },
+      "ValidateProjectRequest": {
+        "properties": {
+          "project": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Project"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "title": "ValidateProjectRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VoicePreviewRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "voice": {
+            "$ref": "#/components/schemas/VoiceSelection"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "voice"
+        ],
+        "title": "VoicePreviewRequest"
+      },
+      "VoiceProfile": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "engine": {
+            "type": "string",
+            "title": "Engine",
+            "default": "chatterbox"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en"
+          },
+          "consent": {
+            "$ref": "#/components/schemas/Consent"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference",
+            "default": "reference.wav"
+          },
+          "duration": {
+            "type": "number",
+            "title": "Duration",
+            "default": 0.0
+          },
+          "quality": {
+            "items": {
+              "$ref": "#/components/schemas/Check"
+            },
+            "type": "array",
+            "title": "Quality"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed",
+            "default": 1234
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "consent"
+        ],
+        "title": "VoiceProfile"
+      },
+      "VoiceSelection": {
+        "properties": {
+          "engine": {
+            "type": "string",
+            "title": "Engine"
+          },
+          "voice_id": {
+            "type": "string",
+            "title": "Voice Id"
+          },
+          "speed": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.5,
+            "title": "Speed",
+            "default": 1.0
+          },
+          "energy": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Energy",
+            "default": 0.5
+          }
+        },
+        "type": "object",
+        "required": [
+          "engine",
+          "voice_id"
+        ],
+        "title": "VoiceSelection"
+      }
+    }
+  }
+}

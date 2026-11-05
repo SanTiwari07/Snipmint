@@ -1,0 +1,21 @@
+Snipmint
+Copyright (c) 2026 SanTiwari07 and Snipmint contributors
+Licensed under the MIT License (see LICENSE).
+
+Snipmint is built from two MIT-licensed open-source projects:
+
+1. NarraReel - https://github.com/SanTiwari07/NarraReel
+   Copyright (c) 2026 SanTiwari07 and NarraReel contributors
+   MIT License. The web app, caption engine, presets, fonts handling, render,
+   voice engines and job runner started from NarraReel.
+
+2. OpenShorts - https://github.com/mutonby/openshorts
+   Copyright (c) 2024 OpenShorts
+   MIT License (core only). Download, transcription, clip-window selection,
+   reframing and Gemini prompt code is adapted from the OpenShorts core.
+   Ported modules carry a "Ported from openshorts/<file>" header.
+   Nothing from the OpenShorts "cloud/" directory (OpenShorts Commercial
+   License) is included in Snipmint.
+
+Third-party components and font licences are listed in THIRD_PARTY_LICENSES.md
+and snipmint/assets/fonts/*/.

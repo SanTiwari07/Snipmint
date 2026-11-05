@@ -1,0 +1,41 @@
+{
+  "id": "neon",
+  "name": "Neon",
+  "version": 1,
+  "font": {
+    "id": "rubik-bold",
+    "size": 90,
+    "uppercase": true,
+    "letter_spacing": 1
+  },
+  "colors": {
+    "text": "#E8FFFF",
+    "highlight": "#FFF700",
+    "outline": "#00E5FF",
+    "shadow": "#00000000",
+    "box": null
+  },
+  "outline_width": 5,
+  "shadow_offset": 0,
+  "layout": {
+    "words_per_chunk": 3,
+    "max_lines": 2,
+    "position": "lower_middle",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "word",
+    "scale": 1.1,
+    "box": false,
+    "box_color": "#FF3B6B",
+    "box_padding": 14
+  },
+  "animation": {
+    "in": "fade",
+    "duration_ms": 120
+  },
+  "emphasis": {
+    "enabled": false
+  },
+  "blur": 3
+}

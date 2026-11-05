@@ -1,0 +1,21 @@
+{
+  "id": "reels",
+  "name": "Reels / TikTok / Shorts",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "positions": {
+    "top": 0.17,
+    "middle": 0.5,
+    "lower_middle": 0.62,
+    "bottom": 0.74
+  },
+  "max_text_width": 0.84,
+  "safe_zone": {
+    "top": 0.12,
+    "bottom": 0.2,
+    "right": 0.1
+  },
+  "default_style": "bold-pop",
+  "note": "Captions stay clear of the platform buttons and description area."
+}

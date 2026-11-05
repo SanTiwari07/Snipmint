@@ -1,0 +1,12 @@
+# Development override: live-reload backend, code mounted from the host.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build snipmint
+#   cd frontend && npm run dev     (UI on http://localhost:5173, proxies /api to :8000)
+services:
+  snipmint:
+    volumes:
+      - ./snipmint:/app/snipmint
+      - ./data:/data
+      - models:/models
+    environment:
+      - SNIPMINT_TOKEN=dev
+    command: ["snipmint", "serve", "--host", "0.0.0.0", "--port", "8000", "--dev"]

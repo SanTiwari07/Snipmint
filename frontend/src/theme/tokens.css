@@ -1,0 +1,90 @@
+/* Every colour, radius, space and type size in the app lives here.
+   Components use these tokens only; restyling means editing this file. */
+
+:root {
+  color-scheme: dark;
+
+  /* brand */
+  --color-primary: #faff69;
+  --color-primary-active: #e6eb52;
+  --color-primary-disabled: #3a3a1f;
+  --color-on-primary: #0a0a0a;
+
+  /* surfaces */
+  --color-canvas: #0a0a0a;
+  --color-surface-soft: #121212;
+  --color-surface-card: #1a1a1a;
+  --color-surface-elevated: #242424;
+  --color-hairline: #2a2a2a;
+  --color-hairline-strong: #3a3a3a;
+
+  /* text */
+  --color-on-dark: #ffffff;
+  --color-body: #cccccc;
+  --color-body-strong: #e6e6e6;
+  --color-muted: #888888;
+  --color-muted-soft: #5a5a5a;
+
+  /* semantic */
+  --color-emerald: #22c55e;
+  --color-rose: #ef4444;
+  --color-blue: #3b82f6;
+
+  /* radius */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-pill: 624.9375rem;
+
+  /* spacing (4px base) */
+  --space-xxs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 3rem;
+  --space-section: 6rem;
+
+  /* type */
+  --font-sans: 'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* headlines shrink on small screens; the cap is the design size */
+  --text-display-xl: clamp(2.75rem, 1.6rem + 5.4vw, 4.5rem);
+  --text-display-lg: clamp(2.25rem, 1.4rem + 4vw, 3.5rem);
+  --text-display-md: clamp(1.75rem, 1.25rem + 2.3vw, 2.5rem);
+  --text-display-sm: clamp(1.5rem, 1.2rem + 1.4vw, 2rem);
+  --text-step: clamp(1.75rem, 1.35rem + 1.3vw, 2.25rem); /* one heading per step */
+  --text-lede: 1.0625rem;
+  --text-title-lg: 1.375rem;
+  --text-title-md: 1.125rem;
+  --text-title-sm: 1rem;
+  --text-body-md: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.8125rem;
+  --text-caption-up: 0.75rem;
+
+  --tracking-xl: -0.1562rem;
+  --tracking-lg: -0.125rem;
+  --tracking-md: -0.09375rem;
+  --tracking-sm: -0.0625rem;
+  --tracking-title: -0.01875rem;
+
+  /* Controls on the left, the video preview on the right. Sized in rem, so the whole
+     workspace grows with the root font size on 2K and 4K screens and stays centred. */
+  --workspace: 74rem;
+  --rail: 20rem;
+  --solo: 48rem; /* question screens: one centred column */
+  --gutter: var(--space-lg);
+  --nav-height: 4rem;
+  --bar-height: 4.5rem; /* the Back / Next bar pinned to the bottom */
+  --touch-target: 2.75rem; /* 44 px: the smallest comfortable tap size */
+
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --focus-ring: 0 0 0 2px var(--color-canvas), 0 0 0 0.25rem var(--color-primary);
+}

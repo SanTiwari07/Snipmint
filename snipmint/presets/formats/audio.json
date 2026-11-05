@@ -1,0 +1,21 @@
+{
+  "id": "audio",
+  "name": "Audio only",
+  "width": null,
+  "height": null,
+  "fps": 30,
+  "positions": {
+    "top": 0.17,
+    "middle": 0.5,
+    "lower_middle": 0.62,
+    "bottom": 0.74
+  },
+  "max_text_width": 0.84,
+  "safe_zone": {
+    "top": 0,
+    "bottom": 0,
+    "right": 0
+  },
+  "default_style": "bold-pop",
+  "note": "Voiceover, subtitles and timings only - no video."
+}

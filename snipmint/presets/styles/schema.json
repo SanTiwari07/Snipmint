@@ -1,0 +1,286 @@
+{
+  "$defs": {
+    "Animation": {
+      "properties": {
+        "in": {
+          "default": "pop",
+          "enum": [
+            "none",
+            "pop",
+            "fade",
+            "bounce"
+          ],
+          "title": "In",
+          "type": "string"
+        },
+        "duration_ms": {
+          "default": 120,
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        }
+      },
+      "title": "Animation",
+      "type": "object"
+    },
+    "Colors": {
+      "properties": {
+        "text": {
+          "default": "#FFFFFF",
+          "title": "Text",
+          "type": "string"
+        },
+        "highlight": {
+          "default": "#FFE600",
+          "title": "Highlight",
+          "type": "string"
+        },
+        "outline": {
+          "default": "#000000",
+          "title": "Outline",
+          "type": "string"
+        },
+        "shadow": {
+          "default": "#000000AA",
+          "title": "Shadow",
+          "type": "string"
+        },
+        "box": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Box"
+        }
+      },
+      "title": "Colors",
+      "type": "object"
+    },
+    "Emphasis": {
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "auto": {
+          "default": false,
+          "title": "Auto",
+          "type": "boolean"
+        },
+        "color": {
+          "default": "#00E5FF",
+          "title": "Color",
+          "type": "string"
+        },
+        "scale": {
+          "default": 1.25,
+          "maximum": 2.0,
+          "minimum": 0.5,
+          "title": "Scale",
+          "type": "number"
+        }
+      },
+      "title": "Emphasis",
+      "type": "object"
+    },
+    "FontSpec": {
+      "properties": {
+        "id": {
+          "default": "montserrat-black",
+          "title": "Id",
+          "type": "string"
+        },
+        "size": {
+          "default": 88,
+          "maximum": 300,
+          "minimum": 20,
+          "title": "Size",
+          "type": "integer"
+        },
+        "uppercase": {
+          "default": true,
+          "title": "Uppercase",
+          "type": "boolean"
+        },
+        "letter_spacing": {
+          "default": 0.0,
+          "maximum": 20.0,
+          "minimum": -5.0,
+          "title": "Letter Spacing",
+          "type": "number"
+        }
+      },
+      "title": "FontSpec",
+      "type": "object"
+    },
+    "Highlight": {
+      "properties": {
+        "mode": {
+          "default": "word",
+          "enum": [
+            "word",
+            "karaoke",
+            "none"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "scale": {
+          "default": 1.15,
+          "maximum": 2.0,
+          "minimum": 0.5,
+          "title": "Scale",
+          "type": "number"
+        },
+        "box": {
+          "default": false,
+          "title": "Box",
+          "type": "boolean"
+        },
+        "box_color": {
+          "default": "#FF3B6B",
+          "title": "Box Color",
+          "type": "string"
+        },
+        "box_padding": {
+          "default": 14,
+          "maximum": 60,
+          "minimum": 0,
+          "title": "Box Padding",
+          "type": "integer"
+        }
+      },
+      "title": "Highlight",
+      "type": "object"
+    },
+    "Layout": {
+      "properties": {
+        "words_per_chunk": {
+          "default": 3,
+          "maximum": 8,
+          "minimum": 1,
+          "title": "Words Per Chunk",
+          "type": "integer"
+        },
+        "max_lines": {
+          "default": 2,
+          "maximum": 2,
+          "minimum": 1,
+          "title": "Max Lines",
+          "type": "integer"
+        },
+        "position": {
+          "default": "lower_middle",
+          "enum": [
+            "top",
+            "middle",
+            "lower_middle",
+            "bottom"
+          ],
+          "title": "Position",
+          "type": "string"
+        },
+        "offset_y": {
+          "default": 0,
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "Offset Y",
+          "type": "integer"
+        },
+        "align_x": {
+          "default": "center",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "title": "Align X",
+          "type": "string"
+        },
+        "offset_x": {
+          "default": 0,
+          "maximum": 1000,
+          "minimum": -1000,
+          "title": "Offset X",
+          "type": "integer"
+        }
+      },
+      "title": "Layout",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "id": {
+      "default": "custom",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "default": "Custom",
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "font": {
+      "$ref": "#/$defs/FontSpec"
+    },
+    "colors": {
+      "$ref": "#/$defs/Colors"
+    },
+    "outline_width": {
+      "default": 6.0,
+      "maximum": 30,
+      "minimum": 0,
+      "title": "Outline Width",
+      "type": "number"
+    },
+    "shadow_offset": {
+      "default": 3.0,
+      "maximum": 20,
+      "minimum": 0,
+      "title": "Shadow Offset",
+      "type": "number"
+    },
+    "blur": {
+      "default": 0.0,
+      "maximum": 10,
+      "minimum": 0,
+      "title": "Blur",
+      "type": "number"
+    },
+    "border_style": {
+      "default": "outline",
+      "enum": [
+        "outline",
+        "box"
+      ],
+      "title": "Border Style",
+      "type": "string"
+    },
+    "layout": {
+      "$ref": "#/$defs/Layout"
+    },
+    "highlight": {
+      "$ref": "#/$defs/Highlight"
+    },
+    "animation": {
+      "$ref": "#/$defs/Animation"
+    },
+    "emphasis": {
+      "$ref": "#/$defs/Emphasis"
+    }
+  },
+  "title": "CaptionStyle",
+  "type": "object"
+}

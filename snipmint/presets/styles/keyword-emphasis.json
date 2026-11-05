@@ -1,0 +1,43 @@
+{
+  "id": "keyword-emphasis",
+  "name": "Keyword Emphasis",
+  "version": 1,
+  "font": {
+    "id": "poppins-bold",
+    "size": 78,
+    "uppercase": false,
+    "letter_spacing": 0
+  },
+  "colors": {
+    "text": "#FFFFFF",
+    "highlight": "#FFFFFF",
+    "outline": "#000000",
+    "shadow": "#000000AA",
+    "box": null
+  },
+  "outline_width": 5,
+  "shadow_offset": 2,
+  "layout": {
+    "words_per_chunk": 4,
+    "max_lines": 2,
+    "position": "lower_middle",
+    "offset_y": 0
+  },
+  "highlight": {
+    "mode": "none",
+    "scale": 1.0,
+    "box": false,
+    "box_color": "#FF3B6B",
+    "box_padding": 14
+  },
+  "animation": {
+    "in": "pop",
+    "duration_ms": 120
+  },
+  "emphasis": {
+    "enabled": true,
+    "auto": true,
+    "color": "#FFE600",
+    "scale": 1.3
+  }
+}
