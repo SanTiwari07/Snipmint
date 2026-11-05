@@ -91,9 +91,7 @@ def register(app: FastAPI, runner: JobRunner) -> None:
                                                   progress=progress, cancel=cancel)  # fmt: skip
 
         job = runner.submit_task("source", run)
-        st = src.status
-        st.task_id = job.id
-        src.save_status(st)
+        src.update_status(lambda st: setattr(st, "task_id", job.id))
         return SourceCreated(source_id=src.id, task_id=job.id)
 
     @app.get("/api/sources/{source_id}", tags=["sources"])

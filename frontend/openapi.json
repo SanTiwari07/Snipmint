@@ -95,6 +95,150 @@
         }
       }
     },
+    "/api/engines/{engine_id}/install": {
+      "post": {
+        "tags": [
+          "voices"
+        ],
+        "summary": "Install Engine",
+        "operationId": "install_engine_api_engines__engine_id__install_post",
+        "parameters": [
+          {
+            "name": "engine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Engine Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storage/models": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Model Storage",
+        "operationId": "model_storage_api_storage_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelStorage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Set Model Storage",
+        "operationId": "set_model_storage_api_storage_models_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelFolderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storage/models/browse": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Browse Model Folder",
+        "operationId": "browse_model_folder_api_storage_models_browse_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderPicked"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storage/models/keep": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Keep Model Folder",
+        "operationId": "keep_model_folder_api_storage_models_keep_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelStorage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/voices": {
       "get": {
         "tags": [
@@ -1404,10 +1548,395 @@
           }
         }
       }
+    },
+    "/api/sources": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Create Source",
+        "operationId": "create_source_api_sources_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sources/{source_id}": {
+      "get": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Get Source",
+        "operationId": "get_source_api_sources__source_id__get",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Source Api Sources  Source Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sources/{source_id}/analyze": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Analyze Source",
+        "operationId": "analyze_source_api_sources__source_id__analyze_post",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeOptions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sources/{source_id}/video": {
+      "get": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Source Video",
+        "operationId": "source_video_api_sources__source_id__video_get",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clips/preview": {
+      "post": {
+        "tags": [
+          "clips"
+        ],
+        "summary": "Clip Preview",
+        "operationId": "clip_preview_api_clips_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClipPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clips": {
+      "post": {
+        "tags": [
+          "clips"
+        ],
+        "summary": "Create Clips",
+        "operationId": "create_clips_api_clips_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClipsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Create Clips Api Clips Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clips/{job_id}/files/{name}": {
+      "get": {
+        "tags": [
+          "clips"
+        ],
+        "summary": "Clip File",
+        "operationId": "clip_file_api_clips__job_id__files__name__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Download"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/check-key": {
+      "post": {
+        "tags": [
+          "ai"
+        ],
+        "summary": "Check Key",
+        "operationId": "check_key_api_ai_check_key_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckKeyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AnalyzeOptions": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "heuristic",
+              "local_llm",
+              "gemini"
+            ],
+            "title": "Provider",
+            "default": "auto"
+          },
+          "min_seconds": {
+            "type": "number",
+            "maximum": 175.0,
+            "minimum": 5.0,
+            "title": "Min Seconds",
+            "default": 30.0
+          },
+          "max_seconds": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": 10.0,
+            "title": "Max Seconds",
+            "default": 60.0
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 20.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "title": "AnalyzeOptions"
+      },
       "AnalyzeRequest": {
         "properties": {
           "text": {
@@ -1687,6 +2216,214 @@
           "detail"
         ],
         "title": "Check"
+      },
+      "CheckKeyResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "CheckKeyResponse"
+      },
+      "ClipExport": {
+        "properties": {
+          "quality": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "balanced",
+              "high"
+            ],
+            "title": "Quality",
+            "default": "balanced"
+          },
+          "fps": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 60.0,
+                "minimum": 10.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fps"
+          }
+        },
+        "type": "object",
+        "title": "ClipExport"
+      },
+      "ClipPreviewRequest": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "End"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "captions": {
+            "$ref": "#/components/schemas/CaptionsConfig"
+          },
+          "captions_enabled": {
+            "type": "boolean",
+            "title": "Captions Enabled",
+            "default": true
+          },
+          "format": {
+            "type": "string",
+            "title": "Format",
+            "default": "reels"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "start",
+          "end"
+        ],
+        "title": "ClipPreviewRequest"
+      },
+      "ClipSpec": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "End"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": ""
+          },
+          "hook_text": {
+            "type": "string",
+            "title": "Hook Text",
+            "default": ""
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keywords"
+          },
+          "descriptions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Descriptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "start",
+          "end"
+        ],
+        "title": "ClipSpec"
+      },
+      "ClipsRequest": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "clips": {
+            "items": {
+              "$ref": "#/components/schemas/ClipSpec"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Clips"
+          },
+          "captions": {
+            "$ref": "#/components/schemas/CaptionsConfig"
+          },
+          "captions_enabled": {
+            "type": "boolean",
+            "title": "Captions Enabled",
+            "default": true
+          },
+          "format": {
+            "type": "string",
+            "title": "Format",
+            "default": "reels"
+          },
+          "framing": {
+            "type": "string",
+            "enum": [
+              "center",
+              "track",
+              "split",
+              "screencast"
+            ],
+            "title": "Framing",
+            "default": "center"
+          },
+          "export": {
+            "$ref": "#/components/schemas/ClipExport"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "clips"
+        ],
+        "title": "ClipsRequest"
       },
       "CloneResult": {
         "properties": {
@@ -1983,6 +2720,26 @@
         "type": "object",
         "title": "ExportConfig"
       },
+      "FolderPicked": {
+        "properties": {
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "title": "FolderPicked"
+      },
       "FramePreviewRequest": {
         "properties": {
           "project": {
@@ -2070,6 +2827,18 @@
             "type": "boolean",
             "title": "Demo",
             "default": false
+          },
+          "transcribe_available": {
+            "type": "boolean",
+            "title": "Transcribe Available",
+            "default": false
+          },
+          "ai": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Ai"
           }
         },
         "type": "object",
@@ -2105,6 +2874,72 @@
           "project"
         ],
         "title": "JobRequest"
+      },
+      "ModelFolderRequest": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "title": "ModelFolderRequest"
+      },
+      "ModelStorage": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "default_path": {
+            "type": "string",
+            "title": "Default Path"
+          },
+          "chosen": {
+            "type": "boolean",
+            "title": "Chosen"
+          },
+          "from_env": {
+            "type": "boolean",
+            "title": "From Env"
+          },
+          "free_gb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Free Gb"
+          },
+          "models_gb": {
+            "type": "number",
+            "title": "Models Gb"
+          },
+          "needed_gb": {
+            "type": "number",
+            "title": "Needed Gb"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "default_path",
+          "chosen",
+          "from_env",
+          "free_gb",
+          "models_gb",
+          "needed_gb"
+        ],
+        "title": "ModelStorage",
+        "description": "Where the voice-cloning model is (or will be) downloaded."
       },
       "ParseDurationRequest": {
         "properties": {
@@ -2327,6 +3162,40 @@
           "paragraph_idx"
         ],
         "title": "SentenceInfo"
+      },
+      "SourceCreated": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "task_id"
+        ],
+        "title": "SourceCreated"
+      },
+      "SourceRequest": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/AnalyzeOptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "SourceRequest"
       },
       "StylePresetRequest": {
         "properties": {

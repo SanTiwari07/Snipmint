@@ -1,59 +1,67 @@
-import { useEffect, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { type AiMode, LENGTH_BANDS, clipsApi, getAiMode, getGeminiKey, providerFor } from '../api/clips'
+import type { Health } from '../api/types'
+import { AiSettings } from '../components/AiSettings'
 import { Logo } from '../components/Shell'
-import { readProjectFile } from '../lib/projectFile'
-import { useDraft } from '../state/project'
+import { Button } from '../components/ui'
+import { useClips } from '../state/clips'
 import { useSession } from '../state/session'
-import { ModelFolder } from './ModelFolder'
 
-function firstWords(text: string, count = 12): string {
-  const words = text.trim().split(/\s+/)
-  return words.slice(0, count).join(' ') + (words.length > count ? '…' : '')
-}
-
-/** The first question: start fresh, carry on, or open a saved project. */
+/** The first question: which video? */
 export function StartScreen() {
   const navigate = useNavigate()
-  const script = useDraft((s) => s.script)
-  const reset = useDraft((s) => s.reset)
-  const load = useDraft((s) => s.load)
-  const { start, setJob, toast } = useSession()
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [opening, setOpening] = useState(false)
-  // first run: ask where downloads and videos go before anything lands on the system drive
-  // (not the whole catalog: checking the voice engines takes seconds)
-  const [local, setLocal] = useState(false)
-  const [folderAsking, setFolderAsking] = useState(false)
+  const { start, toast } = useSession()
+  const { url: lastUrl, sourceId, band, count, startSource, reset } = useClips()
+  const lastTitle = useClips((s) => s.source?.meta?.title)
+  const [url, setUrl] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [mode, setMode] = useState<AiMode>(getAiMode())
+  const [health, setHealth] = useState<Health | null>(null)
+
   useEffect(() => {
     api
       .health()
-      .then((h) => setLocal(!h.demo))
-      .catch(() => setLocal(false))
+      .then(setHealth)
+      .catch(() => setHealth(null))
   }, [])
-  const hasDraft = !!script.trim()
-  const words = hasDraft ? script.trim().split(/\s+/).length : 0
 
-  const fresh = () => {
-    reset()
-    setJob(null, null)
-    start()
-    navigate('/script')
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    const link = url.trim()
+    if (!link) {
+      setError('Paste a YouTube link first.')
+      return
+    }
+    if (mode === 'advanced' && !getGeminiKey() && !(health?.ai?.gemini_server_key ?? false)) {
+      setError('Advanced mode needs a Gemini API key. Add one below, or switch to Free.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    try {
+      const b = LENGTH_BANDS[band]
+      const created = await clipsApi.createSource(link, {
+        provider: providerFor(mode),
+        min_seconds: b.min,
+        max_seconds: b.max,
+        count,
+      })
+      startSource(link, created.source_id, created.task_id)
+      start()
+      navigate('/source')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'That link could not be used.')
+    } finally {
+      setBusy(false)
+    }
   }
 
-  const open = async (file: File) => {
-    setOpening(true)
-    try {
-      load(await readProjectFile(file))
-      setJob(null, null)
-      start()
-      toast('success', `Opened ${file.name}. Check your choices, then make the video.`)
-      navigate('/export')
-    } catch (e) {
-      toast('error', e instanceof Error ? e.message : 'That file is not a Snipmint project.')
-    } finally {
-      setOpening(false)
-    }
+  const carryOn = () => {
+    start()
+    navigate('/moments')
   }
 
   return (
@@ -65,59 +73,62 @@ export function StartScreen() {
       </header>
       <main id="main" className="start__main">
         <div className="start__head">
-          <h1 className="display">Turn your script into a captioned video</h1>
-          <p className="lede">Write what to say, pick a voice, style the captions. Snipmint does the rest.</p>
+          <h1 className="display">Turn a YouTube video into shorts</h1>
+          <p className="lede">
+            Paste a link. Snipmint finds the best moments, crops them to vertical and adds captions people watch to
+            the end.
+          </p>
         </div>
 
-        {local && <ModelFolder onAsking={setFolderAsking} />}
-
-        {!folderAsking && (
-          <div className="start__choices">
-            <button type="button" className="start-card start-card--primary" onClick={fresh}>
-              <span className="start-card__title">Start a new video</span>
-              <span className="start-card__text">Begin with an empty script.</span>
-              <span className="start-card__go" aria-hidden="true">
-                →
-              </span>
-            </button>
-
-            {hasDraft && (
-              <button
-                type="button"
-                className="start-card"
-                onClick={() => {
-                  start()
-                  navigate('/script')
-                }}
-              >
-                <span className="start-card__title">Continue where you left off</span>
-                <span className="start-card__text">
-                  “{firstWords(script)}” <span className="start-card__meta">{words} words</span>
-                </span>
-                <span className="start-card__go" aria-hidden="true">
-                  →
-                </span>
-              </button>
-            )}
-
-            <button type="button" className="start-card" disabled={opening} onClick={() => fileRef.current?.click()}>
-              <span className="start-card__title">{opening ? 'Opening…' : 'Open a saved project'}</span>
-              <span className="start-card__text">A .snipmint.json file you saved after making a video.</span>
-              <span className="start-card__go" aria-hidden="true">
-                →
-              </span>
-            </button>
+        <form className="link-form card" onSubmit={submit} noValidate>
+          <label className="field__label" htmlFor="yt-url">
+            YouTube link
+          </label>
+          <div className="link-form__row">
             <input
-              ref={fileRef}
-              type="file"
-              accept=".json,application/json"
-              hidden
+              id="yt-url"
+              className="input link-form__input"
+              type="url"
+              inputMode="url"
+              autoComplete="off"
+              placeholder="https://www.youtube.com/watch?v=…"
+              value={url}
+              aria-invalid={!!error}
+              aria-describedby={error ? 'yt-url-error' : 'yt-url-hint'}
               onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (f) void open(f)
-                e.target.value = ''
+                setUrl(e.target.value)
+                if (error) setError(null)
               }}
             />
+            <Button variant="primary" className="btn--lg" type="submit" busy={busy}>
+              Find clips
+            </Button>
+          </div>
+          {error ? (
+            <p className="field__error" id="yt-url-error" role="alert">
+              {error}
+            </p>
+          ) : (
+            <p className="field__hint" id="yt-url-hint">
+              One video at a time: podcasts, interviews, talks and streams work best. Only clip videos you have the
+              rights to use.
+            </p>
+          )}
+          <AiSettings mode={mode} onMode={setMode} health={health} onToast={toast} />
+        </form>
+
+        {sourceId && (
+          <div className="start__choices">
+            <button type="button" className="start-card" onClick={carryOn}>
+              <span className="start-card__title">Continue with your last video</span>
+              <span className="start-card__text">{lastTitle ?? lastUrl}</span>
+              <span className="start-card__go" aria-hidden="true">
+                →
+              </span>
+            </button>
+            <button type="button" className="link-btn" onClick={reset}>
+              Forget it
+            </button>
           </div>
         )}
       </main>

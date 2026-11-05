@@ -7,7 +7,7 @@ import { usePreviewUrl } from '../hooks/useAsync'
 import { LOW_CONTRAST, contrastRatio } from '../lib/color'
 import { useCatalog } from '../state/catalog'
 import { DEFAULT_DRAFT, effectiveStyle, toProject, useDraft } from '../state/project'
-import { useScriptInfo } from '../state/scriptInfo'
+import { useClips } from '../state/clips'
 import { useSession } from '../state/session'
 
 const FONT_TAGS = [
@@ -36,7 +36,7 @@ function Setting({ title, value, open, children }: { title: string; value?: stri
 }
 
 function FormatPicker() {
-  const formats = useCatalog((s) => s.formats)
+  const formats = useCatalog((s) => s.formats).filter((f) => !!f.width)
   const format = useDraft((s) => s.format)
   const { patch, setCaptions } = useDraft()
   const styles = useCatalog((s) => s.styles)
@@ -81,7 +81,8 @@ function FontGrid() {
   const refreshFonts = useCatalog((s) => s.refreshFonts)
   const styles = useCatalog((s) => s.styles)
   const { captions, setCaptions } = useDraft()
-  const { analysis } = useScriptInfo()
+  const language = useClips((s) => s.source?.meta?.language ?? null)
+  const transcriptHindi = useClips((s) => /[ऀ-ॿ]/.test(s.source?.analysis?.moments[0]?.text ?? ''))
   const toast = useSession((s) => s.toast)
   const [tag, setTag] = useState<(typeof FONT_TAGS)[number]['id']>('all')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -89,7 +90,7 @@ function FontGrid() {
   const current = captions.font ?? preset?.font.id
   const currentInfo = fonts.find((f) => f.id === current)
   const needsDevanagari =
-    (analysis.data?.language_hint === 'hi' || analysis.data?.warnings.some((w) => w.code === 'mixed_scripts')) &&
+    (language === 'hi' || transcriptHindi) &&
     currentInfo &&
     !currentInfo.scripts.includes('devanagari')
 
@@ -133,7 +134,7 @@ function FontGrid() {
       </div>
       {needsDevanagari && (
         <Banner tone="warn" title="This font can't show Hindi">
-          Your script has Devanagari text. Choose Noto Sans Devanagari so every character shows.
+          This video has Devanagari text. Choose Noto Sans Devanagari so every character shows.
         </Banner>
       )}
       {shown.length === 0 ? (
@@ -413,79 +414,18 @@ function FineTune() {
   )
 }
 
-const BACKGROUND_NAME = { solid: 'Plain colour', transparent: 'See-through', image: 'Picture', video: 'Video' } as const
-
-function BackgroundPicker() {
-  const { background, setBackground, setExport } = useDraft()
-  const toast = useSession((s) => s.toast)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [busy, setBusy] = useState(false)
-  const type = background.type
-
-  const upload = async (file: File) => {
-    setBusy(true)
-    try {
-      const r = await api.uploadBackground(file)
-      setBackground({ type: r.type, path: r.path, fileName: r.name })
-    } catch (e) {
-      toast('error', e instanceof Error ? e.message : 'That file could not be used.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const choose = (t: typeof type) => {
-    setBackground({ type: t })
-    if (t === 'transparent') setExport({ video: 'webm' })
-    else setExport({ video: 'mp4' })
-  }
-
+function CaptionsToggle() {
+  const captionsEnabled = useClips((s) => s.captionsEnabled)
+  const patch = useClips((s) => s.patch)
   return (
-    <Setting title="Background" value={BACKGROUND_NAME[type]}>
-      <Segmented
-        label="Background type"
-        value={type}
-        onChange={choose}
-        items={[
-          { id: 'solid', label: 'Plain colour' },
-          { id: 'image', label: 'Picture' },
-          { id: 'video', label: 'Video' },
-          { id: 'transparent', label: 'See-through' },
-        ]}
+    <div className="card">
+      <Switch
+        label="Burn captions into the clips"
+        hint="Turn off to get clean clips; you still get an .srt subtitle file for each one."
+        checked={captionsEnabled}
+        onChange={(v) => patch({ captionsEnabled: v })}
       />
-      {type === 'solid' && <ColorField label="Background colour" value={background.color} onChange={(v) => setBackground({ color: v })} />}
-      {type === 'transparent' && (
-        <p className="field__hint">
-          Only the captions are exported, with nothing behind them, so you can lay them over your own footage in an
-          editor such as CapCut, Premiere or DaVinci Resolve. The preview shows grey behind them.
-        </p>
-      )}
-      {(type === 'image' || type === 'video') && (
-        <>
-          <input
-            ref={fileRef}
-            type="file"
-            accept={type === 'image' ? 'image/png,image/jpeg,image/webp' : 'video/mp4,video/quicktime,video/webm'}
-            hidden
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void upload(f)
-              e.target.value = ''
-            }}
-          />
-          <div className="row">
-            <Button variant="secondary" busy={busy} onClick={() => fileRef.current?.click()}>
-              {background.fileName && background.path ? 'Choose another file' : `Choose ${type === 'image' ? 'a picture' : 'a video'}`}
-            </Button>
-            <span className="field__hint">{background.path ? background.fileName : 'It fills the whole frame, behind the captions.'}</span>
-          </div>
-          <div className="grid-2">
-            <Slider label="Blur" value={background.blur} min={0} max={30} step={1} onChange={(v) => setBackground({ blur: v })} format={(v) => (v === 0 ? 'None' : String(v))} />
-            <Slider label="Darken" value={background.darken} min={0} max={1} step={0.05} onChange={(v) => setBackground({ darken: v })} format={(v) => `${Math.round(v * 100)}%`} />
-          </div>
-        </>
-      )}
-    </Setting>
+    </div>
   )
 }
 
@@ -494,8 +434,9 @@ export function CaptionsStep() {
     <div className="step">
       <header className="step-head">
         <h1 className="display">How should the captions look?</h1>
-        <p className="lede">Pick a style. The preview shows your own words and changes as you choose.</p>
+        <p className="lede">Pick a style. The preview shows a real frame of your first clip and changes as you choose.</p>
       </header>
+      <CaptionsToggle />
       <FormatPicker />
       <PresetGrid />
       <section className="section" aria-labelledby="adjust-title">
@@ -508,7 +449,6 @@ export function CaptionsStep() {
         <div className="settings">
           <FontGrid />
           <FineTune />
-          <BackgroundPicker />
         </div>
       </section>
     </div>

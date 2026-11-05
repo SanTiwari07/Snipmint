@@ -203,6 +203,7 @@ class ClipPreviewRequest(BaseModel):
     end: float = Field(gt=0)
     keywords: list[str] = Field(default_factory=list)
     captions: CaptionsConfig = Field(default_factory=CaptionsConfig)
+    captions_enabled: bool = True
     format: str = "reels"
     at: float | None = None  # seconds into the clip; default: an early caption with 2+ words
 
@@ -221,7 +222,7 @@ def preview_clip_frame(req: ClipPreviewRequest) -> bytes:
     at = req.at
     ass_text = "[Script Info]\nScriptType: v4.00+\n"
     font = None
-    if words:
+    if words and req.captions_enabled:
         captions = build_captions(words, analysis, style, fmt, req.captions.keep_emoji)
         ass_text, font = captions.ass, captions.font
         if at is None:

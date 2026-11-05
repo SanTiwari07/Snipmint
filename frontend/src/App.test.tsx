@@ -1,26 +1,69 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
+import type { SourceState } from './api/clips'
 import { screenFor } from './flow'
-import { DEFAULT_DRAFT, useDraft } from './state/project'
 import { useCatalog } from './state/catalog'
+import { useClips } from './state/clips'
+import { DEFAULT_DRAFT, useDraft } from './state/project'
 import { useSession } from './state/session'
 
-const analysis = {
-  word_count: 5,
-  char_count: 20,
-  sentence_count: 1,
-  paragraph_count: 1,
-  language_hint: 'en',
-  warnings: [],
-  sentences: [{ idx: 0, text: 'One two three four five.', words: 5, seconds: 1.4, paragraph_idx: 0 }],
-  estimate: { speech_seconds: 1.4, pause_seconds: 0.65, total_seconds: 2.05, words_per_minute: 146, basis: 'default' },
-  cps: 14,
+const SOURCE: SourceState = {
+  source_id: 'yt-AAAAAAAAAAA',
+  meta: {
+    id: 'yt-AAAAAAAAAAA',
+    url: 'https://www.youtube.com/watch?v=AAAAAAAAAAA',
+    video_id: 'AAAAAAAAAAA',
+    title: 'A long podcast',
+    channel: 'Someone',
+    duration: 1800,
+    width: 1920,
+    height: 1080,
+    thumbnail: null,
+    chapters: [],
+    heatmap: [],
+    language: 'en',
+  },
+  vertical: false,
+  status: {
+    stages: { probe: 'done', download: 'done', audio: 'done', transcribe: 'done', signals: 'done', analyze: 'done' },
+    error: null,
+    task_id: 'source-1',
+    warnings: [],
+  },
+  has_video: true,
+  has_transcript: true,
+  analysis: {
+    provider: 'heuristic',
+    requested: 'heuristic',
+    fallback_reason: null,
+    options: { provider: 'heuristic', min_seconds: 30, max_seconds: 60, count: null },
+    cost_usd: null,
+    moments: [1, 2, 3, 4].map((i) => ({
+      id: `m0${i}`,
+      start: i * 100,
+      end: i * 100 + 40,
+      score: 100 - i,
+      why: 'Opens with a strong line',
+      title: `Moment number ${i}`,
+      hook_text: 'Why do you never see it?',
+      descriptions: {},
+      keywords: ['never'],
+      provider: 'heuristic' as const,
+      fallback: false,
+      layout: null,
+      text: 'Why do you never see it? Because nobody tells you.',
+    })),
+  },
+  task: null,
 }
 
+let posted: { path: string; body: unknown }[] = []
+
 function mockApi() {
+  posted = []
   const routes: Record<string, unknown> = {
-    '/api/health': { version: '0', ffmpeg: true, libass: true, align_available: false, auth_required: false },
+    '/api/health': { version: '0', ffmpeg: true, libass: true, align_available: false, auth_required: false, demo: false, transcribe_available: true, ai: { gemini_installed: true, gemini_server_key: false, local_llm: false } },
     '/api/presets/formats': [
       { id: 'reels', name: 'Reels / TikTok / Shorts', width: 1080, height: 1920, fps: 30, positions: {}, max_text_width: 0.84, safe_zone: {}, default_style: 'bold-pop', note: '' },
     ],
@@ -28,98 +71,86 @@ function mockApi() {
     '/api/fonts': [],
     '/api/engines': [],
     '/api/voices': [],
-    '/api/analyze': analysis,
-    '/api/plan': { cps: 14, plan: { estimate_1x: analysis.estimate, target_seconds: null, options: [], recommended: 0 } },
+    '/api/sources': { source_id: 'yt-AAAAAAAAAAA', task_id: 'source-1' },
+    '/api/sources/yt-AAAAAAAAAAA': SOURCE,
   }
-  globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+  globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = String(input).split('?')[0]
+    if (init?.method === 'POST') posted.push({ path, body: init.body ? JSON.parse(String(init.body)) : null })
+    if (path === '/api/clips/preview') return new Response(new Blob(['x']), { status: 200 })
     if (!(path in routes)) return new Response(JSON.stringify({ error: 'nope' }), { status: 404 })
     return new Response(JSON.stringify(routes[path]), { status: 200, headers: { 'Content-Type': 'application/json' } })
   }) as typeof fetch
 }
 
+class FakeEventSource {
+  addEventListener() {}
+  close() {}
+  onerror: (() => void) | null = null
+}
+
 beforeEach(() => {
   mockApi()
+  globalThis.EventSource = FakeEventSource as unknown as typeof EventSource
+  globalThis.URL.createObjectURL = vi.fn(() => 'blob:x')
+  globalThis.URL.revokeObjectURL = vi.fn()
   useDraft.setState({ ...DEFAULT_DRAFT })
   useCatalog.setState({ loaded: false, error: null })
-  useSession.setState({ started: true })
+  useClips.getState().reset()
+  useSession.setState({ started: false })
 })
 
 describe('App', () => {
-  it('asks new, continue or open before anything else', async () => {
-    useSession.setState({ started: false })
-    useDraft.setState({ script: 'An old draft from before.' })
+  it('starts by asking for a YouTube link', async () => {
     render(
-      <MemoryRouter initialEntries={['/voice']}>
+      <MemoryRouter initialEntries={['/moments']}>
         <App />
       </MemoryRouter>,
     )
-    expect(await screen.findByRole('button', { name: /start a new video/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /continue where you left off/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /open a saved project/i })).toBeInTheDocument()
-    // saving only appears once a video is made
-    expect(screen.queryByRole('button', { name: /save project/i })).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: /start a new video/i }))
-    const box = await screen.findByLabelText('Script')
-    expect(box).toHaveValue('')
+    expect(await screen.findByLabelText(/youtube link/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /find clips/i }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(/paste a youtube link/i)
+    expect(posted).toHaveLength(0)
   })
 
-  it('blocks Next until there is a script', async () => {
+  it('sends the link with the free analysis and opens the video step', async () => {
     render(
-      <MemoryRouter initialEntries={['/script']}>
+      <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     )
-    expect(await screen.findByRole('heading', { name: /what should your video say/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /next: set the length/i })).toBeDisabled()
-    expect(screen.getByText(/add a script first/i)).toBeInTheDocument()
+    fireEvent.change(await screen.findByLabelText(/youtube link/i), {
+      target: { value: 'https://youtu.be/AAAAAAAAAAA' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /find clips/i }))
+    await waitFor(() => expect(posted.some((p) => p.path === '/api/sources')).toBe(true))
+    const body = posted.find((p) => p.path === '/api/sources')!.body as { analysis: { provider: string } }
+    expect(body.analysis.provider).toBe('heuristic')
+    expect(await screen.findByRole('heading', { name: /your video is ready/i })).toBeInTheDocument()
   })
 
-  it('updates the live counts as the user types', async () => {
+  it('lists the moments with the best three picked', async () => {
+    useClips.setState({ sourceId: 'yt-AAAAAAAAAAA', url: 'https://youtu.be/AAAAAAAAAAA' })
+    useClips.getState().setSource(SOURCE)
+    useSession.setState({ started: true })
     render(
-      <MemoryRouter initialEntries={['/script']}>
+      <MemoryRouter initialEntries={['/moments']}>
         <App />
       </MemoryRouter>,
     )
-    const box = await screen.findByLabelText('Script')
-    fireEvent.change(box, { target: { value: 'One two three four five.' } })
-    await waitFor(() => expect(screen.getByText(/in 1 sentence\./)).toBeInTheDocument(), { timeout: 3000 })
-    expect(screen.getByRole('button', { name: /next: set the length/i })).toBeEnabled()
-  })
-
-  it('asks for the length on its own screen', async () => {
-    render(
-      <MemoryRouter initialEntries={['/length']}>
-        <App />
-      </MemoryRouter>,
-    )
-    expect(await screen.findByRole('heading', { name: /how long should it be/i })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: /natural length/i })).toHaveAttribute('aria-checked', 'true')
-  })
-
-  it('asks which kind of voice first, and marks the step', async () => {
-    render(
-      <MemoryRouter initialEntries={['/voice']}>
-        <App />
-      </MemoryRouter>,
-    )
-    expect(await screen.findByRole('heading', { name: /whose voice should read it/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /an ai voice/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /my own voice/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Voice' })).toHaveAttribute('aria-current', 'page')
+    expect(await screen.findByText('Moment number 1')).toBeInTheDocument()
+    expect(screen.getAllByRole('checkbox', { checked: true })).toHaveLength(3)
+    fireEvent.click(screen.getByRole('checkbox', { name: /moment number 4/i }))
+    expect(useClips.getState().selected).toContain('m04')
   })
 })
 
-describe('screenFor', () => {
-  it('sends Back from the sound screen to the voice list that was used', () => {
-    expect(screenFor('/voice/sound', DEFAULT_DRAFT)?.back).toBe('/voice/ai')
-    const own = { ...DEFAULT_DRAFT, voice: { engine: 'chatterbox', voice_id: 'abc' } }
-    expect(screenFor('/voice/sound', own)?.back).toBe('/voice/mine')
-  })
-  it('holds My voice until a saved voice is chosen', () => {
-    expect(screenFor('/voice/mine', DEFAULT_DRAFT)?.next?.blocked).toBeTruthy()
-    const own = { ...DEFAULT_DRAFT, voice: { engine: 'chatterbox', voice_id: 'abc' } }
-    expect(screenFor('/voice/mine', own)?.next?.blocked).toBeFalsy()
+describe('flow guards', () => {
+  it('needs a ready video and at least one moment', () => {
+    expect(screenFor('/source', { ready: false, selected: 0 })?.next?.blocked).toBeTruthy()
+    expect(screenFor('/source', { ready: true, selected: 0 })?.next?.blocked).toBeFalsy()
+    expect(screenFor('/moments', { ready: true, selected: 0 })?.next?.blocked).toBeTruthy()
+    expect(screenFor('/moments', { ready: true, selected: 2 })?.next?.blocked).toBeFalsy()
+    expect(screenFor('/nope', { ready: true, selected: 2 })).toBeNull()
   })
 })

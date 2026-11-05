@@ -5,6 +5,9 @@ from __future__ import annotations
 import json
 import re
 import threading
+import time
+import uuid
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal
 
@@ -17,6 +20,7 @@ STAGES: tuple[StageName, ...] = ("probe", "download", "audio", "transcribe", "si
 StageState = Literal["pending", "running", "done", "failed", "skipped"]
 _SAFE_ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 _locks: dict[str, threading.Lock] = {}
+_io_locks: dict[str, threading.RLock] = {}
 
 
 class Chapter(BaseModel):
@@ -84,14 +88,35 @@ class Source:
 
     # ------------------------------------------------------------------ json helpers
 
+    @property
+    def io_lock(self) -> threading.RLock:
+        """Guards small JSON files (status, meta) that the API and the worker both touch."""
+        return _io_locks.setdefault(self.id, threading.RLock())
+
     def read_json(self, name: str) -> Any:
-        return json.loads(self.file(name).read_text(encoding="utf-8"))
+        with self.io_lock:
+            for attempt in range(20):
+                try:
+                    return json.loads(self.file(name).read_text(encoding="utf-8"))
+                except PermissionError:  # Windows: another process is swapping the file in
+                    if attempt == 19:
+                        raise
+                    time.sleep(0.025)
 
     def write_json(self, name: str, data: Any) -> Path:
         path = self.file(name)
-        tmp = path.with_suffix(path.suffix + ".tmp")
-        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
-        tmp.replace(path)
+        tmp = path.with_name(f"{path.name}.{uuid.uuid4().hex[:8]}.tmp")
+        with self.io_lock:
+            tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+            for attempt in range(20):
+                try:
+                    tmp.replace(path)
+                    break
+                except PermissionError:  # Windows: a reader (e.g. antivirus) has the file open
+                    if attempt == 19:
+                        tmp.unlink(missing_ok=True)
+                        raise
+                    time.sleep(0.025)
         return path
 
     # ------------------------------------------------------------------ meta / status
@@ -117,14 +142,23 @@ class Source:
     def save_status(self, status: SourceStatus) -> None:
         self.write_json("status.json", status.model_dump())
 
+    def update_status(self, change: Callable[[SourceStatus], None]) -> SourceStatus:
+        """Read-modify-write of status.json under the lock, so no update is lost."""
+        with self.io_lock:
+            st = self.status
+            change(st)
+            self.save_status(st)
+            return st
+
     def set_stage(self, stage: str, state: StageState, error: str | None = None) -> None:
-        st = self.status
-        st.stages[stage] = state
-        if state == "failed":
-            st.error = error
-        elif state == "running":
-            st.error = None
-        self.save_status(st)
+        def change(st: SourceStatus) -> None:
+            st.stages[stage] = state
+            if state == "failed":
+                st.error = error
+            elif state == "running":
+                st.error = None
+
+        self.update_status(change)
 
     # ------------------------------------------------------------------ files
 

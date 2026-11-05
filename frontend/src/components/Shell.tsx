@@ -1,10 +1,11 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { STEPS, screenFor } from '../flow'
-import { formatDuration } from '../lib/time'
+import { clock } from '../api/clips'
+import { STEPS } from '../flow'
+import { screenFor, useFlowState } from '../flowState'
 import { useCatalog } from '../state/catalog'
+import { selectedClips, useClips } from '../state/clips'
 import { useSession } from '../state/session'
 import { useDraft } from '../state/project'
-import { useScriptInfo } from '../state/scriptInfo'
 import { PhoneFrame } from './PhoneFrame'
 import { Button } from './ui'
 
@@ -31,8 +32,8 @@ function Check() {
 
 function Stepper() {
   const { pathname } = useLocation()
-  const draft = useDraft()
-  const current = screenFor(pathname, draft)?.step ?? -1
+  const flow = useFlowState()
+  const current = screenFor(pathname, flow)?.step ?? -1
   return (
     <nav className="stepper" aria-label="Steps">
       <ol className="stepper__list">
@@ -70,31 +71,34 @@ export function TopNav() {
   )
 }
 
-/** What the video is made of so far. Each line jumps back to the step that sets it. */
+/** What the clips are made of so far. Each line jumps back to the step that sets it. */
 function Recipe() {
-  const info = useScriptInfo()
-  const { voice, targetSeconds, format, captions, script } = useDraft()
-  const voices = useCatalog((s) => s.voices)
+  const { format, captions } = useDraft()
   const formats = useCatalog((s) => s.formats)
   const styles = useCatalog((s) => s.styles)
-  const voiceName =
-    voices.find((v) => v.engine === voice.engine && v.id === voice.voice_id)?.name ??
-    voice.voice_id.split('-').at(-1)?.replace('Neural', '')
+  const meta = useClips((s) => s.source?.meta)
+  const source = useClips((s) => s.source)
+  const selected = useClips((s) => s.selected)
+  const edits = useClips((s) => s.edits)
+  const captionsEnabled = useClips((s) => s.captionsEnabled)
+  const clips = selectedClips({ source, selected, edits })
   const fmt = formats.find((f) => f.id === format)
   const style = styles.find((s) => s.id === captions.preset)
-  const a = info.analysis.data
-  const hasScript = !!script.trim() && !!a && a.word_count > 0
-  const length = targetSeconds ? formatDuration(targetSeconds) : hasScript ? `About ${formatDuration(a.estimate.total_seconds)}` : null
+  const total = clips.reduce((acc, c) => acc + (c.end - c.start), 0)
 
   const rows = [
-    { to: '/script', label: 'Script', value: hasScript ? `${a.word_count} words` : null, empty: 'Not written yet' },
-    { to: '/length', label: 'Length', value: length, empty: 'Set by your script' },
-    { to: '/voice', label: 'Voice', value: voiceName ?? null, empty: 'Not chosen' },
-    { to: '/captions', label: 'Captions', value: style?.name ?? null, empty: 'Not chosen' },
+    { to: '/source', label: 'Video', value: meta ? meta.title || 'Untitled' : null, empty: 'Not ready yet' },
+    {
+      to: '/moments',
+      label: 'Clips',
+      value: clips.length ? `${clips.length} · ${clock(total)} in total` : null,
+      empty: 'None picked',
+    },
+    { to: '/captions', label: 'Captions', value: captionsEnabled ? (style?.name ?? null) : 'Off', empty: 'Not chosen' },
     { to: '/captions', label: 'Format', value: fmt ? fmt.name.split(' (')[0].split(' / ')[0] : null, empty: 'Not chosen' },
   ]
   return (
-    <ul className="recipe" aria-label="Your video so far">
+    <ul className="recipe" aria-label="Your clips so far">
       {rows.map((r) => (
         <li key={r.label}>
           <NavLink to={r.to} className="recipe__row">
@@ -121,8 +125,8 @@ export function ReelRail() {
 export function StepNav() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const draft = useDraft()
-  const screen = screenFor(pathname, draft)
+  const flow = useFlowState()
+  const screen = screenFor(pathname, flow)
   // the last step draws its own bar, because its forward action is making the video
   if (!screen || pathname === '/export') return null
   const { back, next } = screen

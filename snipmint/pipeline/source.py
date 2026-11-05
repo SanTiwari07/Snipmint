@@ -15,7 +15,7 @@ from ..analyze import service, signals
 from ..analyze.schemas import AnalyzeOptions
 from ..errors import IngestError, JobCancelled, SnipmintError
 from ..ingest import youtube
-from ..ingest.source import Source, SourceStatus
+from ..ingest.source import Source
 from ..models import ProgressEvent
 from ..transcribe import whisper
 
@@ -65,9 +65,7 @@ def prepare_source(
     cancel: threading.Event | None = None,
 ) -> dict:
     with source.lock:
-        status = source.status
-        status.error = None
-        source.save_status(status)
+        source.update_status(lambda st: setattr(st, "error", None))
         current = "probe"
         try:
             # ---- probe
@@ -139,9 +137,8 @@ def prepare_source(
                 progress=lambda f, m: _emit(progress, "analyze", f, m),
             )  # fmt: skip
             source.set_stage("analyze", "done")
-            st = source.status
-            st.warnings = [result.fallback_reason] if result.fallback_reason else []
-            source.save_status(st)
+            warnings = [result.fallback_reason] if result.fallback_reason else []
+            source.update_status(lambda st: setattr(st, "warnings", warnings))
             _emit(progress, "analyze", 1.0, f"Found {len(result.moments)} moments")
             return {"source_id": source.id, "provider": result.provider,
                     "moments": len(result.moments), "fallback_reason": result.fallback_reason}  # fmt: skip
@@ -177,8 +174,7 @@ def reanalyze(
             source.set_stage("analyze", "failed", str(exc))
             raise
         source.set_stage("analyze", "done")
-        st: SourceStatus = source.status
-        st.warnings = [result.fallback_reason] if result.fallback_reason else []
-        source.save_status(st)
+        warnings = [result.fallback_reason] if result.fallback_reason else []
+        source.update_status(lambda st: setattr(st, "warnings", warnings))
         return {"source_id": source.id, "provider": result.provider, "moments": len(result.moments),
                 "fallback_reason": result.fallback_reason}  # fmt: skip

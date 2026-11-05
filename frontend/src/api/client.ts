@@ -65,7 +65,7 @@ async function fail(res: Response): Promise<never> {
   throw new ApiError(message, res.status, kind)
 }
 
-async function send(path: string, init: RequestInit = {}): Promise<Response> {
+export async function send(path: string, init: RequestInit = {}): Promise<Response> {
   let res: Response
   try {
     res = await fetch(path, { ...init, headers: headers(init.headers) })
@@ -80,7 +80,7 @@ async function send(path: string, init: RequestInit = {}): Promise<Response> {
   return res
 }
 
-function json(body: unknown): RequestInit {
+export function json(body: unknown): RequestInit {
   return {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
