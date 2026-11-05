@@ -244,3 +244,28 @@ def test_loudness_filter_reaches_ffmpeg():
     assert "0:a:0?" in args
     spec.audio_filter = None
     assert "-af" not in build_command(spec, "out.mp4")
+
+
+@needs_ffmpeg
+def test_voiceover_is_mixed_over_the_start(letterboxed, tmp_path):
+    from snipmint.pipeline.clips import LOUDNORM
+
+    job = tmp_path / "vo"
+    job.mkdir()
+    ff.run_ffmpeg(["-f", "lavfi", "-i", "sine=frequency=880:duration=1.2", "-ar", "48000", str(job / "hook_01.wav")])
+    (job / "empty.ass").write_text("[Script Info]\nScriptType: v4.00+\n", encoding="utf-8")
+    (job / "fonts").mkdir()
+    spec = RenderSpec(width=540, height=960, fps=30, duration=3.0, background="video",
+                      background_file=str(letterboxed.video), background_start=0.0, audio=None,
+                      audio_from_background=True, ass="empty.ass", quality="fast", audio_filter=LOUDNORM,
+                      voiceover="hook_01.wav", voiceover_until=1.6)  # fmt: skip
+    from snipmint.render.ffmpeg_render import build_command
+
+    args = build_command(spec, "out.mp4")
+    assert "-filter_complex" in args and "-af" not in args and "[aout]" in args
+    out = render(job, spec, "out.mp4")
+    probe = subprocess.run([ff.find_ffprobe(), "-v", "error", "-show_entries", "stream=codec_type:format=duration",
+                            "-of", "json", str(out)], capture_output=True, check=True)  # fmt: skip
+    data = json.loads(probe.stdout)
+    assert {s["codec_type"] for s in data["streams"]} == {"video", "audio"}
+    assert abs(float(data["format"]["duration"]) - 3.0) < 0.2

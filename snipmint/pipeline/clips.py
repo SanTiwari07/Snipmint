@@ -28,7 +28,7 @@ from ..captions.styles import resolve_style
 from ..errors import JobCancelled, ScriptError, SnipmintError
 from ..ingest.source import Source
 from ..jobs.workspace import Workspace
-from ..models import ProgressEvent
+from ..models import ProgressEvent, VoiceSelection
 from ..project import CaptionsConfig
 from ..reframe.framing import Framing, FramingPlan, plan_framing
 from ..render.ffmpeg_render import RenderSpec, render, render_frame
@@ -58,6 +58,13 @@ class ClipExport(BaseModel):
     loudness: bool = True
 
 
+class VoiceOver(BaseModel):
+    """A voice reads the clip's hook over its first seconds; the clip's own sound dips."""
+
+    enabled: bool = False
+    voice: VoiceSelection = Field(default_factory=lambda: VoiceSelection(engine="edge", voice_id="en-US-AvaNeural"))
+
+
 class ClipsRequest(BaseModel):
     source_id: str
     clips: list[ClipSpec] = Field(min_length=1, max_length=30)
@@ -66,6 +73,7 @@ class ClipsRequest(BaseModel):
     format: str = "reels"
     framing: Framing = "auto"
     export: ClipExport = Field(default_factory=ClipExport)
+    voiceover: VoiceOver = Field(default_factory=VoiceOver)
 
 
 class ClipOutput(BaseModel):
@@ -79,6 +87,8 @@ class ClipOutput(BaseModel):
     error: str | None = None
     layout: str | None = None
     framing_note: str | None = None
+    voiceover: bool = False
+    note: str | None = None
 
 
 def clip_name(index: int, ext: str) -> str:
@@ -166,6 +176,16 @@ def make_clips(
             ws.file(cmd_name).write_text(plan.sendcmd(), encoding="utf-8")
             vf = plan.video_filter(int(fmt.width), int(fmt.height), cmd_file=cmd_name)  # type: ignore[arg-type]
             spec = _spec(source, fmt, clip, ass_name, req.export, vf)
+            if req.voiceover.enabled and clip.hook_text.strip():
+                emit("voice", 0.05, f"Clip {i} of {n}: recording the voice-over")
+                try:
+                    vo_name, vo_seconds = _hook_voice(ws, i, clip.hook_text, req.voiceover.voice)
+                    spec.voiceover = vo_name
+                    spec.voiceover_until = min(vo_seconds + 0.4, spec.duration)
+                    out.voiceover = True
+                except Exception as exc:  # no internet for Edge, engine not installed...
+                    log.warning("Voice-over for clip %s skipped: %s", i, exc)
+                    out.note = f"Voice-over skipped: {exc}"
             video_name = clip_name(i, "mp4")
 
             def on_render(frac: float, _emit=emit, _i=i) -> None:
@@ -198,6 +218,17 @@ def make_clips(
     if progress:
         progress(ProgressEvent(stage="done", fraction=1.0, message=f"{len(made)} of {n} clips ready"))
     return {"clips": [o.model_dump() for o in outputs], "files": {"titles": "titles.json"}}
+
+
+def _hook_voice(ws: Workspace, index: int, text: str, voice: VoiceSelection) -> tuple[str, float]:
+    """Speak ``text`` with the chosen voice into ``hook_NN.wav``; return (file name, seconds)."""
+    from ..audio.process import write_wav
+    from ..pipeline.speak import SR, preview_audio
+
+    audio = preview_audio(text.strip(), voice, max_sentences=3)
+    name = clip_name(index, "wav").replace("clip_", "hook_")
+    write_wav(ws.file(name), audio, SR)
+    return name, len(audio) / SR
 
 
 def _style_for(req: ClipPreviewRequest, layout: str):

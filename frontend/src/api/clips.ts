@@ -116,6 +116,7 @@ export interface ClipsRequest {
   format: string
   framing: Framing
   export: { quality: 'fast' | 'balanced' | 'high'; loudness: boolean }
+  voiceover: { enabled: boolean; voice: { engine: string; voice_id: string } }
 }
 
 export interface ClipOutput {
@@ -129,6 +130,8 @@ export interface ClipOutput {
   error: string | null
   layout: 'center' | 'track' | 'split' | 'fit' | 'mixed' | null
   framing_note: string | null
+  voiceover: boolean
+  note: string | null
 }
 
 export interface ClipsJob {

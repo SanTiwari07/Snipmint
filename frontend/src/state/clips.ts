@@ -15,6 +15,7 @@ export interface ClipsDraft {
   framing: Framing
   quality: 'fast' | 'balanced' | 'high'
   loudness: boolean
+  voiceover: { enabled: boolean; engine: string; voice_id: string }
   jobId: string | null
 }
 
@@ -30,6 +31,7 @@ const DEFAULT: ClipsDraft = {
   framing: 'auto',
   quality: 'balanced',
   loudness: true,
+  voiceover: { enabled: false, engine: 'edge', voice_id: 'en-US-AvaNeural' },
   jobId: null,
 }
 
@@ -96,7 +98,7 @@ export const useClips = create<ClipsStore>()(
     }),
     {
       name: 'snipmint.clips',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => {
         try {
           window.sessionStorage.setItem('snipmint.probe', '1')
@@ -107,8 +109,8 @@ export const useClips = create<ClipsStore>()(
         }
       }),
       partialize: (s) => {
-        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, jobId } = s
-        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, jobId }
+        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId } = s
+        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId }
       },
     },
   ),

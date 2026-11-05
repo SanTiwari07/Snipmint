@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api, watchJob } from '../api/client'
 import { type ClipsJob, FRAMINGS, LAYOUT_LABEL, clipFileUrl, clipsApi, clock } from '../api/clips'
 import { Banner, Button, ProgressBar, Segmented, Switch } from '../components/ui'
+import { VoiceOverSection } from '../components/VoiceOverSection'
 import { useCatalog } from '../state/catalog'
 import { selectedClips, useClips } from '../state/clips'
 import { useDraft } from '../state/project'
@@ -22,7 +23,7 @@ export function ExportStep() {
   const styles = useCatalog((s) => s.styles)
   const formats = useCatalog((s) => s.formats)
   const health = useCatalog((s) => s.health)
-  const { source, selected, edits, sourceId, captionsEnabled, quality, loudness, framing, jobId, patch } = useClips()
+  const { source, selected, edits, sourceId, captionsEnabled, quality, loudness, voiceover, framing, jobId, patch } = useClips()
   const clips = useMemo(() => selectedClips({ source, selected, edits }), [source, selected, edits])
   const [job, setJob] = useState<ClipsJob | null>(null)
   const [live, setLive] = useState<Live | null>(null)
@@ -52,6 +53,7 @@ export function ExportStep() {
         format: draft.format,
         framing,
         export: { quality, loudness },
+        voiceover: { enabled: voiceover.enabled, voice: { engine: voiceover.engine, voice_id: voiceover.voice_id } },
       })
       setRunning(job_id)
       patch({ jobId: job_id })
@@ -184,8 +186,10 @@ export function ExportStep() {
                     <span className="field__hint" title={o.framing_note ?? undefined}>
                       {LAYOUT_LABEL[o.layout] ?? o.layout}
                       {o.framing_note?.includes('Black bars') ? ' · black bars removed' : ''}
+                      {o.voiceover ? ' · voice-over' : ''}
                     </span>
                   )}
+                  {o.note && <span className="field__hint">{o.note}</span>}
                   {o.video && (
                     <div className="row">
                       <a className="btn btn--primary" href={clipFileUrl(job.id, o.video, true)} download>
@@ -227,6 +231,8 @@ export function ExportStep() {
         />
         <p className="field__hint">{FRAMINGS.find((f) => f.id === framing)?.hint}</p>
       </section>
+
+      <VoiceOverSection />
 
       <section className="section" aria-labelledby="quality-title">
         <h2 className="section__title" id="quality-title">

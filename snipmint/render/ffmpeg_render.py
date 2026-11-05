@@ -49,6 +49,9 @@ class RenderSpec:
     audio_from_background: bool = False
     video_filter: str | None = None
     audio_filter: str | None = None  # e.g. loudness levelling, applied to the output audio
+    voiceover: str | None = None  # spoken over the start of a clip (relative to the job folder)
+    voiceover_until: float = 0.0  # the clip's own sound is lowered until this time
+    voiceover_duck: float = 0.3
 
 
 _X264 = {"fast": ("veryfast", 23), "balanced": ("medium", 20), "high": ("slow", 17)}
@@ -105,9 +108,23 @@ def build_command(spec: RenderSpec, output: str) -> list[str]:
     args = [*bg_args]
     if spec.audio:
         args += ["-i", spec.audio]
-    args += ["-vf", ",".join(chain)]
     with_audio = bool(spec.audio) or spec.audio_from_background
-    if spec.audio_from_background and not spec.audio:
+    voiceover = bool(spec.voiceover) and spec.audio_from_background and not spec.audio
+    if voiceover:
+        args += ["-i", str(spec.voiceover)]
+    args += ["-vf", ",".join(chain)]
+    if voiceover:
+        # the clip's own sound dips under a spoken voice-over at the start, then comes back
+        until = f"{spec.voiceover_until:.3f}"
+        graph = (
+            f"[0:a]volume='if(lt(t,{until}),{spec.voiceover_duck:g},1)':eval=frame[snd];"
+            f"[1:a]aresample=48000,adelay=150:all=1[vo];"
+            f"[snd][vo]amix=inputs=2:duration=first:normalize=0"
+        )
+        if spec.audio_filter:
+            graph += f",{spec.audio_filter}"
+        args += ["-filter_complex", graph + "[aout]", "-map", "0:v:0", "-map", "[aout]"]
+    elif spec.audio_from_background and not spec.audio:
         args += ["-map", "0:v:0", "-map", "0:a:0?"]
 
     if spec.container == "mp4":
@@ -128,7 +145,7 @@ def build_command(spec: RenderSpec, output: str) -> list[str]:
         args += ["-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt",
                  "yuva444p10le" if transparent else "yuv422p10le"]  # fmt: skip
         audio_codec = ["-c:a", "pcm_s16le"]
-    if with_audio and spec.audio_filter:
+    if with_audio and spec.audio_filter and not voiceover:
         args += ["-af", spec.audio_filter]
     if spec.audio:
         args += [*audio_codec, "-shortest"]
