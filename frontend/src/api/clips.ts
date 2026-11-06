@@ -141,26 +141,17 @@ export interface ClipsJob {
   result: { clips: ClipOutput[] } | null
 }
 
-// ------------------------------------------------------------------ Gemini key (this browser only)
+// ------------------------------------------------------------------ AI mode (the Gemini key lives in .env)
 
-const KEY_STORE = 'snipmint.geminiKey'
 const MODE_STORE = 'snipmint.aiMode'
 export type AiMode = 'free' | 'advanced'
 
-export function getGeminiKey(): string {
+/** Earlier versions kept a Gemini key in this browser; the key now lives only in .env. */
+export function forgetBrowserKey() {
   try {
-    return window.localStorage.getItem(KEY_STORE) ?? ''
+    window.localStorage.removeItem('snipmint.geminiKey')
   } catch {
-    return ''
-  }
-}
-
-export function setGeminiKey(key: string) {
-  try {
-    if (key) window.localStorage.setItem(KEY_STORE, key)
-    else window.localStorage.removeItem(KEY_STORE)
-  } catch {
-    /* storage blocked: the key is used for this request only */
+    /* ignore */
   }
 }
 
@@ -199,15 +190,11 @@ export function setAiMode(mode: AiMode) {
   }
 }
 
-/** Header with the Gemini key, only in Advanced mode (the server falls back to its own key). */
+/** The chosen Gemini model, in Advanced mode. The key itself never leaves the server. */
 function aiHeaders(): Record<string, string> {
   if (getAiMode() !== 'advanced') return {}
-  const out: Record<string, string> = {}
-  const key = getGeminiKey().trim()
   const model = getGeminiModel().trim()
-  if (key) out['X-Gemini-Key'] = key
-  if (model) out['X-Gemini-Model'] = model
-  return out
+  return model ? { 'X-Gemini-Model': model } : {}
 }
 
 function postWithAi<T>(path: string, body: unknown): Promise<T> {
@@ -273,15 +260,9 @@ export const clipsApi = {
     }),
   createClips: (req: ClipsRequest) => postWithAi<{ job_id: string }>('/api/clips', req),
   job: (id: string) => getJson<ClipsJob>(`/api/jobs/${id}`),
-  checkKey: async (key: string): Promise<{ ok: boolean; error: string | null }> => {
-    const init = json({})
-    return (
-      await send('/api/ai/check-key', {
-        ...init,
-        headers: { ...(init.headers as Record<string, string>), 'X-Gemini-Key': key },
-      })
-    ).json()
-  },
+  /** Test the server's own Gemini key (from .env). */
+  checkKey: async (): Promise<{ ok: boolean; error: string | null }> =>
+    (await send('/api/ai/check-key', json({}))).json(),
 }
 
 export const sourceVideoUrl = (id: string) => mediaUrl(`/api/sources/${encodeURIComponent(id)}/video`)

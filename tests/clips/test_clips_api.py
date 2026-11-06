@@ -171,3 +171,14 @@ def test_upload_rejects_silent_and_non_video_files(client, tmp_path):
     r = client.post("/api/sources/upload", files={"file": ("notes.txt", b"hello", "text/plain")})
     assert r.status_code == 400 and "video file" in json.dumps(r.json())
     assert not list((tmp_path / "home" / "sources").glob(".upload-*"))
+
+
+def test_gemini_key_comes_only_from_env(client, monkeypatch):
+    r = client.post("/api/ai/check-key", headers={"X-Gemini-Key": "AIzaSyFROMTHEBROWSER0000000000000000"})
+    body = r.json()
+    assert r.status_code == 200 and body["ok"] is False
+    assert ".env" in body["error"] and "GEMINI_API_KEY" in body["error"]
+    from snipmint.server import clips_api
+
+    monkeypatch.setenv("GEMINI_API_KEY", "server-key")
+    assert clips_api.gemini_key_from(None) == "server-key"  # type: ignore[arg-type]

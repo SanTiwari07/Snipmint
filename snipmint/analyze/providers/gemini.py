@@ -123,7 +123,7 @@ def pick_moments(
     key = (api_key or os.environ.get("GEMINI_API_KEY") or "").strip()
     if client is None:
         if not key:
-            raise AnalysisError("No Gemini API key.")
+            raise AnalysisError("no Gemini key on the server; add GEMINI_API_KEY to .env and restart Snipmint")
         client = make_client(key)
     model = (model or "").strip() or model_name()
     if speech_is_sparse(transcript, meta.duration):

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api, watchJob } from '../api/client'
 import { type ClipsJob, FRAMINGS, LAYOUT_LABEL, clipFileUrl, clipsApi, clock } from '../api/clips'
 import { Banner, Button, ProgressBar, Segmented, Switch } from '../components/ui'
+import { DownloadLink } from '../components/DownloadLink'
 import { VoiceOverSection } from '../components/VoiceOverSection'
 import { downloadProjectFile, toProjectFile } from '../lib/projectFile'
 import { useCatalog } from '../state/catalog'
@@ -130,9 +131,9 @@ export function ExportStep() {
             </Button>
           )}
           {made.length > 1 && !busy && job && (
-            <a className="btn btn--primary btn--lg" href={clipFileUrl(job.id, 'clips.zip', true)} download>
+            <DownloadLink className="btn btn--primary btn--lg" href={clipFileUrl(job.id, 'clips.zip', true)}>
               Download all
-            </a>
+            </DownloadLink>
           )}
         </div>
       </div>
@@ -193,13 +194,13 @@ export function ExportStep() {
                   {o.note && <span className="field__hint">{o.note}</span>}
                   {o.video && (
                     <div className="row">
-                      <a className="btn btn--primary" href={clipFileUrl(job.id, o.video, true)} download>
+                      <DownloadLink className="btn btn--primary" href={clipFileUrl(job.id, o.video, true)}>
                         Download
-                      </a>
+                      </DownloadLink>
                       {o.srt && (
-                        <a className="btn btn--secondary" href={clipFileUrl(job.id, o.srt, true)} download>
+                        <DownloadLink className="btn btn--secondary" href={clipFileUrl(job.id, o.srt, true)}>
                           Subtitles
-                        </a>
+                        </DownloadLink>
                       )}
                     </div>
                   )}
@@ -209,9 +210,7 @@ export function ExportStep() {
           </ol>
           <p className="field__hint">
             Titles, hooks and descriptions for every clip are in{' '}
-            <a href={clipFileUrl(job.id, 'titles.json', true)} download>
-              titles.json
-            </a>
+            <DownloadLink href={clipFileUrl(job.id, 'titles.json', true)}>titles.json</DownloadLink>
             .
           </p>
         </section>

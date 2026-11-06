@@ -286,9 +286,14 @@ def build_zip(job_dir: Path) -> Path:
                    if p.name.startswith("clip_") and p.suffix in (".mp4", ".srt"))  # fmt: skip
     if (job_dir / "titles.json").is_file():
         names.append("titles.json")
-    with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_STORED) as zf:
+    newest = max((job_dir / n).stat().st_mtime for n in names) if names else 0.0
+    if out.is_file() and out.stat().st_mtime >= newest:
+        return out  # still up to date (the download button checks first, then downloads)
+    tmp = out.with_name("clips.zip.tmp")
+    with zipfile.ZipFile(tmp, "w", compression=zipfile.ZIP_STORED) as zf:
         for name in names:
             zf.write(job_dir / name, arcname=name)
+    tmp.replace(out)
     return out
 
 

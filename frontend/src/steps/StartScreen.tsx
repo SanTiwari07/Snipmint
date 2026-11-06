@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import { type AiMode, LENGTH_BANDS, clipsApi, getAiMode, getGeminiKey, providerFor } from '../api/clips'
+import { type AiMode, LENGTH_BANDS, clipsApi, getAiMode, providerFor } from '../api/clips'
 import type { Health } from '../api/types'
 import { AiSettings } from '../components/AiSettings'
 import { Logo } from '../components/Shell'
@@ -42,7 +42,7 @@ export function StartScreen() {
       return
     }
     if (needsKey()) {
-      setError('Advanced mode needs a Gemini API key. Add one below, or switch to Free.')
+      setError('Advanced mode needs a Gemini key in the .env file (see below), or switch to Free.')
       return
     }
     setBusy(true)
@@ -66,11 +66,11 @@ export function StartScreen() {
   }
 
   const needsKey = () =>
-    mode === 'advanced' && !getGeminiKey() && !((health as (Health & { ai?: Record<string, boolean> }) | null)?.ai?.gemini_server_key ?? false)
+    mode === 'advanced' && !((health as (Health & { ai?: Record<string, boolean> }) | null)?.ai?.gemini_server_key ?? false)
 
   const uploadFile = async (file: File) => {
     if (needsKey()) {
-      setError('Advanced mode needs a Gemini API key. Add one below, or switch to Free.')
+      setError('Advanced mode needs a Gemini key in the .env file (see below), or switch to Free.')
       return
     }
     setError(null)

@@ -25,8 +25,11 @@ from ..jobs.runner import JobRunner
 from ..pipeline import clips as clips_mod
 from ..pipeline import source as source_pipeline
 
-KEY_HEADER = "x-gemini-key"
 MODEL_HEADER = "x-gemini-model"
+KEY_HELP = (
+    "Add GEMINI_API_KEY=your-key to the .env file next to docker-compose.yml, then restart "
+    "Snipmint (docker compose up -d). Get a key at https://aistudio.google.com/apikey"
+)
 _CLIP_FILE = re.compile(r"^(clip_\d{2}\.(mp4|srt|ass)|titles\.json|clips\.zip)$")
 
 
@@ -35,10 +38,10 @@ def gemini_model_from(request: Request) -> str | None:
     return model if re.fullmatch(r"[A-Za-z0-9._-]{3,80}", model) else None
 
 
-def gemini_key_from(request: Request) -> str | None:
-    """The key typed in the UI (header) wins over the server's environment. Never logged."""
-    key = (request.headers.get(KEY_HEADER) or "").strip()
-    return key or (os.environ.get("GEMINI_API_KEY") or "").strip() or None
+def gemini_key_from(request: Request) -> str | None:  # noqa: ARG001 - kept for one call shape
+    """The Gemini key comes only from the server's environment (.env), never from the browser,
+    so it is never typed into a page, stored in browser storage or sent over the network."""
+    return (os.environ.get("GEMINI_API_KEY") or "").strip() or None
 
 
 def ai_status() -> dict[str, bool]:
@@ -214,9 +217,10 @@ def register(app: FastAPI, runner: JobRunner) -> None:
 
     @app.post("/api/ai/check-key", response_model=CheckKeyResponse, tags=["ai"])
     def check_key(request: Request) -> CheckKeyResponse:
+        """Test the server's own key (from .env)."""
         key = gemini_key_from(request)
         if not key:
-            return CheckKeyResponse(ok=False, error="No key given.")
+            return CheckKeyResponse(ok=False, error=f"No Gemini key on the server. {KEY_HELP}")
         try:
             from ..analyze.providers import gemini
         except ImportError:

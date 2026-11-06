@@ -49,6 +49,10 @@
 
 If Gemini fails (bad key, quota), Snipmint falls back to the free analysis and tells you.
 
+**Your Gemini key goes in `.env`, never in the browser.** Copy `.env.example` to `.env`, set
+`GEMINI_API_KEY=your-key` (get one at https://aistudio.google.com/apikey) and restart with
+`docker compose up -d`. In the app, choose *Advanced (Gemini)* and press *Check key*.
+
 ## Quick start (Docker)
 
 You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) (on Windows with WSL2).
