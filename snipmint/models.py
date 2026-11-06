@@ -138,6 +138,7 @@ class ProgressEvent(BaseModel):
     stage: Literal[
         "prepare", "voice", "timing", "captions", "render", "done", "error",
         "probe", "download", "audio", "transcribe", "signals", "analyze", "cut",
+        "publish",
     ]
     fraction: float = 0.0
     message: str = ""

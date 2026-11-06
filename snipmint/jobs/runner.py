@@ -225,6 +225,17 @@ class JobRunner:
         self._queue.put((job, fn))
         return job
 
+    def track(self, kind: str) -> Job:
+        """Register a job that runs elsewhere (e.g. uploads on their own threads) so its
+        progress streams through the same /api/tasks/{id}/events endpoint."""
+        job = Job(id=f"{kind}-{int(time.time() * 1000):x}-{len(self._jobs):x}", kind=kind, status="running")
+        return self._register(job)
+
+    def complete(self, job: Job, status: Status, error: str | None = None) -> None:
+        """Finish a job registered with ``track``."""
+        if not job.finished:
+            self._finish(job, status, error)
+
     # --------------------------------------------------------------- lookup
 
     def get(self, job_id: str) -> Job | None:

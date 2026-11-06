@@ -53,6 +53,8 @@ server = [
     "uvicorn[standard]>=0.29",
     "sse-starlette>=2",
     "python-multipart>=0.0.9",
+    # encrypts YouTube OAuth tokens at rest (optional publishing feature)
+    "cryptography>=42",
 ]
 dev = [
     "pytest>=8",
@@ -64,6 +66,7 @@ dev = [
     "python-multipart>=0.0.9",
     "sse-starlette>=2",
     "jsonschema>=4",
+    "cryptography>=42",
 ]
 
 [project.urls]

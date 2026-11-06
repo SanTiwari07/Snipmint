@@ -37,3 +37,8 @@ snipmint/server/static/*
 Thumbs.db
 graphify-out/
 .venv312/
+
+# local settings (the *.example files are committed)
+.env.development
+.env.production
+.env.local

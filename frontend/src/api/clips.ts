@@ -210,7 +210,7 @@ function aiHeaders(): Record<string, string> {
   return out
 }
 
-function postWithAi<T>(path: string, body: unknown): Promise<T> {
+export function postWithAi<T>(path: string, body: unknown): Promise<T> {
   const init = json(body)
   return send(path, { ...init, headers: { ...(init.headers as Record<string, string>), ...aiHeaders() } }).then(
     (r) => r.json() as Promise<T>,

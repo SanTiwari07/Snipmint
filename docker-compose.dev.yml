@@ -7,6 +7,10 @@ services:
       - ./snipmint:/app/snipmint
       - ./data:/data
       - models:/models
+    # development-only settings (a dev OAuth client with a localhost callback); they override .env
+    env_file:
+      - path: .env.development
+        required: false
     environment:
       - SNIPMINT_TOKEN=dev
     command: ["snipmint", "serve", "--host", "0.0.0.0", "--port", "8000", "--dev"]

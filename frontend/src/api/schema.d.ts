@@ -620,6 +620,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sources/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Source
+         * @description A video file from this computer instead of a YouTube link.
+         */
+        post: operations["upload_source_api_sources_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sources/{source_id}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Prepare Again
+         * @description Continue or retry preparing a source (finished steps are kept).
+         */
+        post: operations["prepare_again_api_sources__source_id__prepare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sources/{source_id}": {
         parameters: {
             query?: never;
@@ -733,6 +773,249 @@ export interface paths {
         put?: never;
         /** Check Key */
         post: operations["check_key_api_ai_check_key_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_youtube_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/oauth/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Oauth Start */
+        post: operations["oauth_start_api_youtube_oauth_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disconnect */
+        post: operations["disconnect_api_youtube_disconnect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/channels/{channel_id}/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Default */
+        post: operations["set_default_api_youtube_channels__channel_id__default_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Published */
+        get: operations["list_published_api_youtube_publish_get"];
+        put?: never;
+        /** Publish */
+        post: operations["publish_api_youtube_publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/scheduled": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Scheduled
+         * @description Scheduled uploads, soonest first.
+         */
+        get: operations["list_scheduled_api_youtube_scheduled_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/publish/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Item */
+        get: operations["get_item_api_youtube_publish__item_id__get"];
+        put?: never;
+        post?: never;
+        /** Remove Item */
+        delete: operations["remove_item_api_youtube_publish__item_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/publish/{item_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Item */
+        post: operations["cancel_item_api_youtube_publish__item_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/youtube/publish/{item_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Item */
+        post: operations["retry_item_api_youtube_publish__item_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/metadata/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Options */
+        get: operations["options_api_metadata_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/metadata/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Metadata */
+        get: operations["get_metadata_api_metadata__source_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/metadata/{source_id}/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate */
+        post: operations["generate_api_metadata__source_id__generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/metadata/{source_id}/{clip_id}/regenerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerate */
+        post: operations["regenerate_api_metadata__source_id___clip_id__regenerate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/metadata/{source_id}/{clip_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit */
+        put: operations["edit_api_metadata__source_id___clip_id__put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -857,6 +1140,16 @@ export interface components {
             /** File */
             file: string;
         };
+        /** Body_upload_source_api_sources_upload_post */
+        Body_upload_source_api_sources_upload_post: {
+            /** File */
+            file: string;
+            /**
+             * Analysis
+             * @default {}
+             */
+            analysis: string;
+        };
         /** CaptionsConfig */
         CaptionsConfig: {
             /**
@@ -875,6 +1168,32 @@ export interface components {
              * @default false
              */
             keep_emoji: boolean;
+        };
+        /**
+         * Channel
+         * @description What the UI may see about a connected channel.
+         */
+        Channel: {
+            /** Id */
+            id: string;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /** Custom Url */
+            custom_url?: string | null;
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /** Connected At */
+            connected_at?: string;
+            /** Scopes */
+            scopes?: string[];
+        };
+        /** ChannelRef */
+        ChannelRef: {
+            /** Channel Id */
+            channel_id?: string | null;
         };
         /** Check */
         Check: {
@@ -907,6 +1226,60 @@ export interface components {
             quality: "fast" | "balanced" | "high";
             /** Fps */
             fps?: number | null;
+            /**
+             * Loudness
+             * @default true
+             */
+            loudness: boolean;
+        };
+        /** ClipMetadata */
+        ClipMetadata: {
+            /** Title */
+            title: string;
+            /** Title Variants */
+            title_variants: components["schemas"]["TitleVariant"][];
+            /**
+             * Title Reason
+             * @description Why this title was picked from the variants
+             * @default
+             */
+            title_reason: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Hashtags */
+            hashtags: string[];
+            /** Tags */
+            tags?: string[];
+            /**
+             * Hook
+             * @default
+             */
+            hook: string;
+            /**
+             * Pinned Comment
+             * @default
+             */
+            pinned_comment: string;
+            /**
+             * Language
+             * @default en
+             */
+            language: string;
+            /**
+             * Category Id
+             * @default 22
+             */
+            category_id: string;
+            /**
+             * Category
+             * @default People & Blogs
+             */
+            category: string;
+            /** Seo Keywords */
+            seo_keywords?: string[];
         };
         /** ClipPreviewRequest */
         ClipPreviewRequest: {
@@ -929,8 +1302,35 @@ export interface components {
              * @default reels
              */
             format: string;
+            /**
+             * Framing
+             * @default auto
+             * @enum {string}
+             */
+            framing: "auto" | "center" | "track" | "split" | "fit";
             /** At */
             at?: number | null;
+        };
+        /** ClipRef */
+        ClipRef: {
+            /** Clip Id */
+            clip_id: string;
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /**
+             * Hook Text
+             * @default
+             */
+            hook_text: string;
+            /** Keywords */
+            keywords?: string[];
         };
         /** ClipSpec */
         ClipSpec: {
@@ -957,6 +1357,35 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** ClipToPublish */
+        ClipToPublish: {
+            /** Job Id */
+            job_id: string;
+            /** Clip File */
+            clip_file: string;
+            /** Clip Id */
+            clip_id?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Hashtags */
+            hashtags?: string[];
+            /** Tags */
+            tags?: string[];
+            /**
+             * Category Id
+             * @default 22
+             */
+            category_id: string;
+            /** Language */
+            language?: string | null;
+        };
         /** ClipsRequest */
         ClipsRequest: {
             /** Source Id */
@@ -976,11 +1405,12 @@ export interface components {
             format: string;
             /**
              * Framing
-             * @default center
+             * @default auto
              * @enum {string}
              */
-            framing: "center" | "track" | "split" | "screencast";
+            framing: "auto" | "center" | "track" | "split" | "fit";
             export?: components["schemas"]["ClipExport"];
+            voiceover?: components["schemas"]["VoiceOver"];
         };
         /** CloneResult */
         CloneResult: {
@@ -998,6 +1428,13 @@ export interface components {
             text: string;
             /** At */
             at: string;
+        };
+        /** DisconnectResponse */
+        DisconnectResponse: {
+            /** Disconnected */
+            disconnected: boolean;
+            /** Revoked */
+            revoked: boolean;
         };
         /** DurationConfig */
         DurationConfig: {
@@ -1063,6 +1500,13 @@ export interface components {
              */
             recommended: number;
         };
+        /** EditRequest */
+        EditRequest: {
+            /** Changes */
+            changes: {
+                [key: string]: unknown;
+            };
+        };
         /** ExportConfig */
         ExportConfig: {
             /**
@@ -1094,6 +1538,22 @@ export interface components {
             at?: number | null;
             /** Word Index */
             word_index?: number | null;
+        };
+        /** GenerateRequest */
+        GenerateRequest: {
+            /** Clips */
+            clips: components["schemas"]["ClipRef"][];
+            /**
+             * Language
+             * @default en
+             */
+            language: string;
+            /**
+             * Provider
+             * @default auto
+             * @enum {string}
+             */
+            provider: "auto" | "gemini" | "fallback";
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1141,6 +1601,62 @@ export interface components {
         JobRequest: {
             project: components["schemas"]["ProjectConfig"];
         };
+        /** LanguageInfo */
+        LanguageInfo: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+        };
+        /** MetadataOptions */
+        MetadataOptions: {
+            /** Languages */
+            languages: components["schemas"]["LanguageInfo"][];
+            /** Categories */
+            categories: {
+                [key: string]: string;
+            };
+        };
+        /** MetadataRecord */
+        MetadataRecord: {
+            /** Clip Id */
+            clip_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            metadata: components["schemas"]["ClipMetadata"];
+            /** Origin */
+            origin?: {
+                [key: string]: "ai" | "fallback" | "edited";
+            };
+            /**
+             * Provider
+             * @default fallback
+             * @enum {string}
+             */
+            provider: "gemini" | "fallback";
+            /** Note */
+            note?: string | null;
+            /**
+             * Variant
+             * @default 0
+             */
+            variant: number;
+            /** Updated */
+            updated?: number;
+        };
+        /** MetadataSet */
+        MetadataSet: {
+            /** Source Id */
+            source_id: string;
+            /** Clips */
+            clips: {
+                [key: string]: components["schemas"]["MetadataRecord"];
+            };
+        };
         /** ModelFolderRequest */
         ModelFolderRequest: {
             /** Path */
@@ -1165,6 +1681,19 @@ export interface components {
             models_gb: number;
             /** Needed Gb */
             needed_gb: number;
+        };
+        /** OAuthStart */
+        OAuthStart: {
+            /**
+             * Return To
+             * @default /publish
+             */
+            return_to: string;
+        };
+        /** OAuthStartResponse */
+        OAuthStartResponse: {
+            /** Auth Url */
+            auth_url: string;
         };
         /** ParseDurationRequest */
         ParseDurationRequest: {
@@ -1218,6 +1747,51 @@ export interface components {
             background?: components["schemas"]["BackgroundConfig"];
             export?: components["schemas"]["ExportConfig"];
         };
+        /** PublishCreated */
+        PublishCreated: {
+            /** Batch Id */
+            batch_id: string;
+            /** Task Id */
+            task_id: string;
+            /** Items */
+            items: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** PublishRequest */
+        PublishRequest: {
+            /** Channel Id */
+            channel_id?: string | null;
+            /** Clips */
+            clips: components["schemas"]["ClipToPublish"][];
+            /**
+             * Privacy
+             * @default private
+             * @enum {string}
+             */
+            privacy: "private" | "unlisted" | "public";
+            /**
+             * Made For Kids
+             * @default false
+             */
+            made_for_kids: boolean;
+            /**
+             * Publish At
+             * @description Schedule: the video goes public at this time (uploaded as private now).
+             */
+            publish_at?: string | null;
+            /**
+             * Allow Duplicate
+             * @default false
+             */
+            allow_duplicate: boolean;
+            /**
+             * Confirmed
+             * @description Set by the confirmation dialog; nothing is uploaded without it.
+             * @default false
+             */
+            confirmed: boolean;
+        };
         /** QualityReport */
         QualityReport: {
             /** Duration */
@@ -1229,6 +1803,22 @@ export interface components {
              * @default true
              */
             usable: boolean;
+        };
+        /** RegenerateRequest */
+        RegenerateRequest: {
+            /**
+             * Field
+             * @description One field to regenerate; empty = every field you haven't edited
+             */
+            field?: string | null;
+            /** Language */
+            language?: string | null;
+            /**
+             * Provider
+             * @default auto
+             * @enum {string}
+             */
+            provider: "auto" | "gemini" | "fallback";
         };
         /** ScriptWarning */
         ScriptWarning: {
@@ -1286,6 +1876,16 @@ export interface components {
             /** Task Id */
             task_id: string;
         };
+        /** TitleVariant */
+        TitleVariant: {
+            /** Title */
+            title: string;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
         /** UploadResult */
         UploadResult: {
             /** Path */
@@ -1316,6 +1916,18 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * VoiceOver
+         * @description A voice reads the clip's hook over its first seconds; the clip's own sound dips.
+         */
+        VoiceOver: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            voice?: components["schemas"]["VoiceSelection"];
         };
         /** VoicePreviewRequest */
         VoicePreviewRequest: {
@@ -1376,6 +1988,36 @@ export interface components {
              * @default 0.5
              */
             energy: number;
+        };
+        /** YouTubeStatus */
+        YouTubeStatus: {
+            /** Configured */
+            configured: boolean;
+            /** Encryption Available */
+            encryption_available: boolean;
+            /**
+             * Environment
+             * @default production
+             */
+            environment: string;
+            /**
+             * Config Error
+             * @description Why the Google settings can't work (e.g. a non-https redirect URI)
+             */
+            config_error?: string | null;
+            /** Redirect Uri */
+            redirect_uri?: string | null;
+            /** Channels */
+            channels?: components["schemas"]["Channel"][];
+            /** Default Channel */
+            default_channel?: string | null;
+            /**
+             * Concurrency
+             * @default 2
+             */
+            concurrency: number;
+            /** Scopes */
+            scopes?: string[];
         };
     };
     responses: never;
@@ -2592,6 +3234,74 @@ export interface operations {
             };
         };
     };
+    upload_source_api_sources_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_source_api_sources_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_again_api_sources__source_id__prepare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalyzeOptions"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_source_api_sources__source_id__get: {
         parameters: {
             query?: never;
@@ -2809,6 +3519,500 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CheckKeyResponse"];
+                };
+            };
+        };
+    };
+    status_api_youtube_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["YouTubeStatus"];
+                };
+            };
+        };
+    };
+    oauth_start_api_youtube_oauth_start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OAuthStart"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthStartResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disconnect_api_youtube_disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChannelRef"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisconnectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_default_api_youtube_channels__channel_id__default_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["YouTubeStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_published_api_youtube_publish_get: {
+        parameters: {
+            query?: {
+                scheduled?: boolean | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_api_youtube_publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_scheduled_api_youtube_scheduled_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+        };
+    };
+    get_item_api_youtube_publish__item_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_item_api_youtube_publish__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_item_api_youtube_publish__item_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_item_api_youtube_publish__item_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    options_api_metadata_options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataOptions"];
+                };
+            };
+        };
+    };
+    get_metadata_api_metadata__source_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataSet"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_api_metadata__source_id__generate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataSet"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    regenerate_api_metadata__source_id___clip_id__regenerate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                clip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_api_metadata__source_id___clip_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                clip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

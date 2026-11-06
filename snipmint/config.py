@@ -95,6 +95,30 @@ def _file_config() -> dict:
         return {}
 
 
+def load_env_file(path: Path, *, override: bool = False) -> list[str]:
+    """Read ``KEY=value`` lines into ``os.environ`` (real environment variables win unless
+    ``override``). Supports comments, blank lines, ``export KEY=...`` and quoted values.
+    Returns the names that were set; values are never printed."""
+    applied: list[str] = []
+    for raw in Path(path).read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        if line.startswith("export "):
+            line = line[7:].lstrip()
+        key, value = (part.strip() for part in line.split("=", 1))
+        if not key.replace("_", "").isalnum():
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
+            value = value[1:-1]
+        elif " #" in value:
+            value = value.split(" #", 1)[0].rstrip()
+        if override or not os.environ.get(key):
+            os.environ[key] = value
+            applied.append(key)
+    return applied
+
+
 def load_settings() -> Settings:
     cfg = _file_config()
 

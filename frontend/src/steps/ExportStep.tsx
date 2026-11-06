@@ -134,6 +134,11 @@ export function ExportStep() {
               Download all
             </a>
           )}
+          {made.length > 0 && !busy && (
+            <Link className="btn btn--secondary btn--lg" to="/publish">
+              Publish to YouTube
+            </Link>
+          )}
         </div>
       </div>
     </div>,

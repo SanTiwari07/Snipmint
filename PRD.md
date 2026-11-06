@@ -55,7 +55,7 @@ Creators and editors who want shorts from a long video (podcast, interview, lect
 
 ### Non-goals (v1)
 - User accounts, billing and a hosted multi-user SaaS. Self-host only.
-- Auto-posting to TikTok, Instagram or YouTube.
+- Auto-posting to TikTok or Instagram. (YouTube publishing was added later as an optional feature: §6.9.)
 - A full timeline video editor. We only nudge cut start and end points.
 - Generating videos from a topic, or adding stock B-roll.
 - Cloning anyone's voice except the user's own.
@@ -152,6 +152,22 @@ Priority: **P0** = MVP, **P1** = v1, **P2** = later.
 | ST-4 | Model selection (default `gemini-3.1-flash-lite`) | P2 |
 | ST-5 | Health endpoint reports the available AI modes, and the UI reflects them | P1 |
 
+### 6.9 YouTube publishing (optional, off without Google credentials)
+| ID | Requirement | Pri |
+|---|---|---|
+| YT-1 | Connect / disconnect a YouTube channel with server-side OAuth 2.0 (authorization code + PKCE + single-use state bound to the browser). Scopes: `youtube.upload`, `youtube.readonly` | P1 |
+| YT-2 | Tokens encrypted at rest, refreshed before expiry, revoked on disconnect; never returned by the API, logged, or written to projects/exports | P0 |
+| YT-3 | Resumable `videos.insert` upload: title, description, hashtags, tags, category, privacy, made-for-kids; progress over SSE; retry with exponential backoff; cancel; duplicate protection; returns video ID and URL | P1 |
+| YT-4 | Per-clip metadata (title + 3 ideas with reasons, description, 3-5 hashtags, tags, hook, pinned comment, language, category, SEO keywords), validated; Gemini with a transcript-only free fallback; unique titles per video; selectable language; no invented facts | P1 |
+| YT-5 | Metadata editor: regenerate / edit / copy per field, character counts, AI-vs-edited marker; regenerating one field never overwrites another edited field | P1 |
+| YT-6 | Batch publishing with a concurrency limit, a confirmation dialog and a dashboard (QUEUED / PREPARING / UPLOADING / PUBLISHED / FAILED / CANCELLED, links, errors, retry) | P1 |
+| YT-7 | Scheduled publishing: persisted, uploaded as private with `publishAt`, survives restarts, list and cancel (cancel until the upload finishes) | P2 |
+
+| YT-8 | Public / unlisted / private chosen by the user and sent as `status.privacyStatus`; a different visibility applied by YouTube is reported, never hidden | P1 |
+| YT-9 | Local development with a `localhost` OAuth callback and no deployment; development settings (`.env.development`, own OAuth client) kept apart from production (`.env`) | P1 |
+
+Constraints (YouTube Data API, checked 2026-11-06): since the 2 Nov 2026 revision, uploads from unverified API projects are no longer restricted to private. `videos.insert` uses its own Video Uploads quota bucket, by default 100 calls/day (1 unit each); quotas are project-specific. External OAuth apps in *Testing* get refresh tokens that expire after 7 days.
+
 ## 7. Free vs Advanced: what the user gets
 
 | Capability | Free (default) | Advanced (Gemini key) |
@@ -172,7 +188,7 @@ Priority: **P0** = MVP, **P1** = v1, **P2** = later.
 | NF-2 | **Performance (CPU, 8 cores):** a 30-min video gets its moments in ≤ 10 min (transcription dominates), and each 45 s clip renders in ≤ 60 s |
 | NF-3 | **Performance (GPU profile):** the same 30-min video in ≤ 3 min |
 | NF-4 | **Reliability:** a failed clip doesn't fail the whole job, and a restart resumes from the cached download and transcript |
-| NF-5 | **Privacy:** no telemetry, and no network calls except YouTube, model downloads and (if enabled) Gemini |
+| NF-5 | **Privacy:** no telemetry, and no network calls except YouTube, model downloads and (if enabled) Gemini and the YouTube Data API |
 | NF-6 | **Security:** localhost-only by default; token required when exposed. SSRF guard on URLs |
 | NF-7 | **Accessibility:** keyboard navigable, visible focus, WCAG AA contrast (inherited from NarraReel) |
 | NF-8 | **Licensing:** MIT. OpenShorts `cloud/` code is never included. Attribution in `NOTICE` |
@@ -206,3 +222,4 @@ Priority: **P0** = MVP, **P1** = v1, **P2** = later.
 | **M2 Smart framing** | RF-2,3,6 · EX-3,4 | Speaker stays in frame in ≥ 90% of test clips |
 | **M3 Advanced AI** | AN-2,8,9 · RF-4 · CP-4 · ST-1-3,5 | Gemini mode works end to end; a bad key falls back cleanly |
 | **M4 Extras** | IN-2,4,6 · AN-3,10 · CP-5,6 · AU-2,3 · EX-5 · ST-4 | Feature complete for v1 |
+| **M5 Publishing** | YT-1..9 | With a development OAuth client on localhost, a clip goes from Make clips to a public, unlisted or private YouTube Short; all tests pass with Google mocked |

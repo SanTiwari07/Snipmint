@@ -128,7 +128,7 @@ export function StepNav() {
   const flow = useFlowState()
   const screen = screenFor(pathname, flow)
   // the last step draws its own bar, because its forward action is making the video
-  if (!screen || pathname === '/export') return null
+  if (!screen || pathname === '/export' || pathname === '/publish') return null
   const { back, next } = screen
   return (
     <div className={screen.rail ? 'step-nav' : 'step-nav step-nav--solo'}>

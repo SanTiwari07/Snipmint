@@ -43,6 +43,9 @@ export function screenFor(pathname: string, f: FlowState): Screen | null {
       return { step: 2, back: '/moments', next: { to: '/export', label: 'Make the clips' }, rail: true }
     case '/export':
       return { step: 3, back: '/captions', rail: true }
+    case '/publish':
+      // optional, after the clips are made; draws its own bar
+      return { step: 3, back: '/export' }
     default:
       return null
   }

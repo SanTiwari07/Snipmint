@@ -172,7 +172,28 @@ snipmint/
 
 Step-by-step tasks, file lists and acceptance checks are in [IMPLEMENTATION.md](IMPLEMENTATION.md).
 
-## 9. Risks
+## 9. YouTube publishing (optional)
+
+```text
+snipmint/youtube/   settings.py  env config (GOOGLE_*), overridable endpoints for the mock server
+                    secrets.py   Fernet box: SNIPMINT_SECRET_KEY or <home>/integrations/secret.key
+                    store.py     IntegrationStore interface + JSON implementation (atomic writes)
+                    oauth.py     auth code + PKCE + state/cookie binding, refresh, revoke
+                    client.py    channels.list + resumable videos.insert (httpx, no Google SDK)
+                    publisher.py upload queue: thread pool (concurrency limit), duplicate keys,
+                                 restart resume, scheduling via status.publishAt
+snipmint/metadata/  schemas.py, fallback.py (transcript-only), prompts.py, generator.py (Gemini, then fallback)
+snipmint/server/    youtube_api.py (/api/youtube/*), metadata_api.py (/api/metadata/*)
+frontend/src/       steps/PublishStep.tsx, components/{MetadataEditor,PublishDashboard,ConfirmDialog}.tsx
+```
+
+- **Off by default.** Without `GOOGLE_CLIENT_ID/SECRET/REDIRECT_URI` only `/api/youtube/status` answers (`configured: false`) and nothing is written to disk.
+- **Storage** is behind `IntegrationStore` (accounts keyed by channel id, so several channels fit). The JSON files live in `<home>/integrations/youtube/`, apart from sources, jobs and projects; a SQLite/Postgres store implements the same methods.
+- **Uploads** run on their own pool, not the single render worker. Each batch is registered as a runner job, so progress streams through the existing `/api/tasks/{id}/events` SSE.
+- **Configuration** comes from env vars. `.env` is production (Docker reads only it); `.env.development` is read by `serve --dev` / `docker-compose.dev.yml`, where an empty `GOOGLE_REDIRECT_URI` defaults to `http://localhost:<port>/api/youtube/oauth/callback`. Redirect URIs must be https except on loopback (Google's rule), checked at start-up.
+- **Metadata** is stored per source in `sources/{id}/metadata.json` with a per-field origin (`ai` / `fallback` / `edited`).
+
+## 10. Risks
 
 | Risk | Mitigation |
 |---|---|
@@ -182,3 +203,5 @@ Step-by-step tasks, file lists and acceptance checks are in [IMPLEMENTATION.md](
 | Weak heuristic picks | Heatmap signal, weights tuned on a test set, Gemini upgrade path |
 | Gemini video cost | Text + frames only; silent-video path behind a length guard |
 | Voice-cloning misuse | Keep NarraReel's consent flow; own voice only |
+| YouTube token leak | Encrypted at rest, server-side only, never logged, revoked on disconnect |
+| YouTube quota (default 100 `videos.insert` calls/day, project-specific) | Clear quota error, no blind retries on quota; documented |

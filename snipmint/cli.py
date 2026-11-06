@@ -535,12 +535,25 @@ def serve(
     demo: Annotated[
         bool, typer.Option("--demo", help="Public demo mode: short scripts, no uploads or cloning")
     ] = False,
+    env_file: Annotated[
+        Path | None,
+        typer.Option("--env-file", help="Read settings from this file (default with --dev: .env.development if present)"),
+    ] = None,
 ):
     """Start the Snipmint web app and API."""
     import threading
     import webbrowser
 
     from .errors import DependencyMissing
+
+    # development settings (e.g. a dev OAuth client with a localhost callback) live in their own
+    # file, so they never mix with the production .env that Docker reads
+    chosen = env_file or (Path(".env.development") if dev and Path(".env.development").is_file() else None)
+    if chosen is not None:
+        if not chosen.is_file():
+            raise SnipmintError(f"Settings file not found: {chosen}")
+        names = config.load_env_file(chosen)
+        typer.echo(f"Loaded {len(names)} setting(s) from {chosen}")
 
     try:
         import uvicorn

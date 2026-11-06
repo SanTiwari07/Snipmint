@@ -13,6 +13,7 @@
 | 1. Free MVP | Done. Link → download → Whisper → free moment scoring → center crop → captions → MP4/SRT/titles.json/zip. Web flow: Start, Video, Moments, Captions, Make clips. Tested end to end on a real YouTube video |
 | 2. Smart framing | Done. Black-bar removal, YuNet face tracking with a calm camera (cuts at scene changes), two-people split that switches to the speaker during close-ups (per scene), whole-picture "fit" for screens, Auto choice per clip, framing picker in the UI. Tested on real videos (speech, screen recording, two-shot interview). Single-clip caption re-render not started |
 | 3. Advanced AI | Done. Gemini two-pass provider, key check, redaction, fallback, caption proofreading (single-word fixes), silent-video picking with a length guard, model choice; Free/Advanced switch and key field in the UI. Gemini layout picker not built: the face-based Auto framing covers it |
+| 5. YouTube publishing | Done (optional, off without Google credentials): OAuth connect/disconnect with PKCE, encrypted tokens, resumable uploads with retry/cancel/duplicate protection, per-clip metadata (Gemini + free fallback) with an editor, batch publishing dashboard, scheduled publishing. Tested against a mocked Google API only; not yet tried with a real channel |
 | 4. Extras | Done: file upload, local AI provider, -14 LUFS levelling, hook voice-over (Edge/Kokoro/cloned voice), save/open project files, captions on/off, size and length limits. Not built: cookies upload in the UI (use YOUTUBE_COOKIES_FILE), single-clip caption re-render |
 
 **How to use this doc:**
@@ -438,6 +439,25 @@ UI: the Export step gets a framing control (Auto track / Center / Split) with sm
 | ST-4 Model select | Settings modal | `GEMINI_MODEL` default; free-text override |
 
 ---
+
+## Phase 5: YouTube publishing (PRD §6.9, YT-1..7)
+
+| Step | Files | Check |
+|---|---|---|
+| 5.1 OAuth + token storage | `snipmint/youtube/{settings,secrets,store,oauth}.py`, `server/youtube_api.py` | `tests/youtube/test_oauth.py`: PKCE URL, state single-use + browser binding, open-redirect guard, encrypted at rest, never in responses or logs, refresh, revoke on disconnect |
+| 5.2 Resumable upload | `youtube/client.py`, `youtube/publisher.py` | `tests/youtube/test_upload.py`: chunks + 308 resume, backoff on 5xx, 401 refresh, quota error, cancel, duplicates, concurrency limit, public/unlisted/private sent as chosen, a visibility YouTube changed is reported |
+| 5.3 Metadata | `snipmint/metadata/*`, `server/metadata_api.py` | `tests/youtube/test_metadata.py`: fallback uses only clip words, unique titles, languages, mocked Gemini, edits survive regeneration |
+| 5.4 Editor UI | `steps/PublishStep.tsx`, `components/MetadataEditor.tsx`, `lib/metadata.ts` | `src/lib/metadata.test.ts`, `src/steps/PublishStep.test.tsx` |
+| 5.5 Batch + dashboard | `components/PublishDashboard.tsx`, `components/ConfirmDialog.tsx` | confirmation required (`confirmed: true`), statuses, retry |
+| 5.6 Scheduling | `publish_at` in `PublishRequest`: private + `status.publishAt` | persisted, resumed after restart, `/api/youtube/scheduled` |
+| 5.8 Dev vs production config | `youtube/settings.py` (dev localhost default, redirect rules), `config.load_env_file`, `serve --env-file`, `.env.development.example`, `docker-compose.dev.yml` | `tests/youtube/test_settings.py` |
+| 5.7 Integration | `tests/youtube/mock_google.py`, `test_integration_mock_server.py` | real HTTP against a mock Google/YouTube server, env-only configuration |
+
+**Endpoints:** `GET /api/youtube/status` · `POST /api/youtube/oauth/start` · `GET /api/youtube/oauth/callback` (no API token; state + cookie + PKCE) · `POST /api/youtube/disconnect` · `POST /api/youtube/channels/{id}/default` · `POST /api/youtube/publish` · `GET /api/youtube/publish` · `GET /api/youtube/scheduled` · `GET /api/youtube/publish/{id}` · `POST /api/youtube/publish/{id}/cancel` · `POST /api/youtube/publish/{id}/retry` · `DELETE /api/youtube/publish/{id}` · `GET /api/metadata/options` · `GET /api/metadata/{source_id}` · `POST /api/metadata/{source_id}/generate` · `POST /api/metadata/{source_id}/{clip_id}/regenerate` · `PUT /api/metadata/{source_id}/{clip_id}`
+
+**Env** (production in `.env`, development in `.env.development`): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `SNIPMINT_SECRET_KEY`, `YOUTUBE_UPLOAD_CONCURRENCY`, `SNIPMINT_UI_URL`; test-only endpoint overrides `YOUTUBE_{AUTH,TOKEN,REVOKE,API,UPLOAD}_URL`.
+
+**Acceptance check:** with a development OAuth client and `snipmint serve --dev` on localhost, connect a channel, publish one clip as public and one scheduled, see both in YouTube Studio; disconnect removes Snipmint from myaccount.google.com/permissions.
 
 ## Conventions
 

@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react'
 import type { Quality } from '../api/types'
 
 type ButtonVariant = 'primary' | 'secondary' | 'text' | 'dark-on-yellow'
@@ -7,6 +7,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'text' | 'dark-on-yellow'
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   busy?: boolean
+  ref?: Ref<HTMLButtonElement>
 }
 
 export function Button({ variant = 'secondary', busy, className = '', children, disabled, ...rest }: ButtonProps) {

@@ -53,7 +53,7 @@ from ..pipeline.speak import preview_audio
 from ..project import ProjectConfig
 from ..script import analyze_script, format_duration, parse_duration, plan
 from ..script import duration as dur
-from . import clips_api
+from . import clips_api, metadata_api, youtube_api
 from . import schemas as S
 
 log = logging.getLogger("snipmint.server")
@@ -72,6 +72,9 @@ SAMPLE_TEXT = {
 
 
 def _status_for(exc: SnipmintError) -> int:
+    explicit = getattr(exc, "http_status", None)
+    if isinstance(explicit, int):
+        return explicit
     if isinstance(
         exc,
         ScriptError
@@ -108,13 +111,19 @@ def create_app(
     token: str | None = None,
     static_dir: Path | None = None,
     demo: bool = False,
+    youtube: youtube_api.YouTubeIntegration | None = None,
 ) -> FastAPI:
     runner = runner or JobRunner()
     model_store.apply()  # downloads go to the model folder the person chose
 
     @contextlib.asynccontextmanager
     async def lifespan(_: FastAPI):
+        youtube = getattr(app.state, "youtube", None)
+        if youtube is not None:
+            youtube.startup()  # picks up uploads a restart interrupted
         yield
+        if youtube is not None:
+            youtube.shutdown()
         runner.shutdown()
 
     app = FastAPI(
@@ -146,11 +155,11 @@ def create_app(
                 request.method != "GET"
                 and path.startswith(("/api/fonts", "/api/backgrounds", "/api/voices/clone",
                                     "/api/voices/custom", "/api/engines/", "/api/presets/styles",
-                                    "/api/storage"))
+                                    "/api/storage", "/api/youtube"))
             )  # fmt: skip
             if blocked:
                 return _error(
-                    "This is the public demo, so uploads, cloning and downloads of models are turned off. "
+                    "This is the public demo, so uploads, cloning, publishing and downloads of models are turned off. "
                     "Install Snipmint on your computer to use them.", 403, "DemoLimit"
                 )
             return await call_next(request)
@@ -159,7 +168,9 @@ def create_app(
 
         @app.middleware("http")
         async def require_token(request: Request, call_next):
-            if request.url.path.startswith("/api/") and request.url.path != "/api/health":
+            # the OAuth callback is a browser redirect from Google: guarded by state + cookie + PKCE
+            open_paths = ("/api/health", youtube_api.CALLBACK_PATH)
+            if request.url.path.startswith("/api/") and request.url.path not in open_paths:
                 header = request.headers.get("authorization", "")
                 supplied = header[7:] if header.lower().startswith("bearer ") else None
                 supplied = supplied or request.query_params.get("token")
@@ -614,6 +625,11 @@ def create_app(
     # ------------------------------------------------- sources and clips
 
     clips_api.register(app, runner)
+
+    # ------------------------------------- YouTube publishing (optional) and metadata
+
+    youtube_api.register(app, runner, dev=dev, integration=youtube)
+    metadata_api.register(app)
 
     # -------------------------------------------------------------- static
 
