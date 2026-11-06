@@ -379,7 +379,7 @@ UI: the Export step gets a framing control (Auto track / Center / Split) with sm
 ## Phase 3: Advanced AI with Gemini (M3)
 
 ### 3.1 Key plumbing (ST-1..3, ST-5)
-- **Resolution order:** the `X-Gemini-Key` request header (from the UI), then `GEMINI_API_KEY` env.
+- **Where the key lives:** only `GEMINI_API_KEY` in `.env` (server environment). The UI never asks for it; when it is missing, Advanced mode shows how to add it to `.env`.
 - `snipmint/ai/keys.py`:
   - `resolve_key(request) -> str | None`
   - logging filter that redacts `AIza…` patterns

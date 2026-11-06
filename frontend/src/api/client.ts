@@ -61,7 +61,9 @@ async function fail(res: Response): Promise<never> {
   } catch {
     /* not JSON */
   }
-  if (res.status === 401) message = 'This server needs an access token. Open the link that includes ?token=…'
+  if (res.status === 401)
+    message =
+      'Snipmint needs its access link. Run `docker compose logs snipmint` and open the link it prints (it includes ?token=…).'
   throw new ApiError(message, res.status, kind)
 }
 

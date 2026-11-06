@@ -171,3 +171,23 @@ def test_upload_rejects_silent_and_non_video_files(client, tmp_path):
     r = client.post("/api/sources/upload", files={"file": ("notes.txt", b"hello", "text/plain")})
     assert r.status_code == 400 and "video file" in json.dumps(r.json())
     assert not list((tmp_path / "home" / "sources").glob(".upload-*"))
+
+
+def test_gemini_key_comes_only_from_env(client, monkeypatch):
+    r = client.post("/api/ai/check-key", headers={"X-Gemini-Key": "AIzaSyFROMTHEBROWSER0000000000000000"})
+    body = r.json()
+    assert r.status_code == 200 and body["ok"] is False
+    assert ".env" in body["error"] and "GEMINI_API_KEY" in body["error"]
+    from snipmint.server import clips_api
+
+    monkeypatch.setenv("GEMINI_API_KEY", "server-key")
+    assert clips_api.gemini_key_from(None) == "server-key"  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("job_id", ["..", ".", "a/b", r"a\b", r"..\jobs", "C:", ""])
+def test_job_ids_cannot_leave_the_jobs_folder(tmp_path, job_id):
+    jobs = tmp_path / "jobs"
+    (jobs / "2026-01-01_000000_abc123").mkdir(parents=True)
+    runner = JobRunner(jobs)
+    assert runner.workspace_for(job_id) is None
+    assert runner.workspace_for("2026-01-01_000000_abc123") == jobs / "2026-01-01_000000_abc123"

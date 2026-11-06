@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import queue
+import re
 import shutil
 import threading
 import time
@@ -25,6 +26,7 @@ from .workspace import Workspace, list_jobs
 log = logging.getLogger("snipmint.jobs")
 
 Status = Literal["queued", "running", "done", "failed", "cancelled"]
+_JOB_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,80}")
 RERENDER_FILES = ("voice.wav", "voice.mp3", "words.json", "project.json", "captions.srt")
 
 
@@ -257,8 +259,11 @@ class JobRunner:
             from .. import config
 
             base = config.jobs_dir()
+        # job folder names are letters, digits, "_" and "-" only: never "..", a slash or a drive
+        if not _JOB_ID.fullmatch(job_id or ""):
+            return None
         path = base / job_id
-        return path if path.is_dir() and "/" not in job_id and "\\" not in job_id else None
+        return path if path.is_dir() else None
 
     def recent(self, limit: int = 20) -> list[dict[str, Any]]:
         """Jobs in memory plus older ones found on disk (job.json), newest first."""

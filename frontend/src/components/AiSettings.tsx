@@ -1,10 +1,12 @@
-import { useState } from 'react'
-import { type AiMode, clipsApi, getGeminiKey, getGeminiModel, setAiMode, setGeminiKey, setGeminiModel } from '../api/clips'
+import { useEffect, useState } from 'react'
+import { type AiMode, clipsApi, forgetBrowserKey, getGeminiModel, setAiMode, setGeminiModel } from '../api/clips'
 import type { Health } from '../api/types'
 import type { Toast } from '../state/session'
 import { Button, Segmented } from './ui'
 
-/** Free (default, on this computer) or Advanced (your Gemini key). */
+const ENV_LINE = 'GEMINI_API_KEY=your-key-here'
+
+/** Free (default, on this computer) or Advanced (Gemini, with the key from the server's .env). */
 export function AiSettings({
   mode,
   onMode,
@@ -16,7 +18,6 @@ export function AiSettings({
   health: Health | null
   onToast: (kind: Toast['kind'], message: string) => void
 }) {
-  const [key, setKey] = useState(getGeminiKey())
   const [model, setModel] = useState(getGeminiModel())
   const [checking, setChecking] = useState(false)
   const [keyState, setKeyState] = useState<'unknown' | 'ok' | 'bad'>('unknown')
@@ -25,28 +26,21 @@ export function AiSettings({
   const serverKey = !!ai?.gemini_server_key
   const installed = ai ? !!ai.gemini_installed : true
 
+  useEffect(() => forgetBrowserKey(), [])
+
   const choose = (m: AiMode) => {
     setAiMode(m)
     onMode(m)
   }
 
   const check = async () => {
-    const k = key.trim()
-    if (!k) {
-      setKeyError('Paste your key first.')
-      return
-    }
     setChecking(true)
     setKeyError(null)
     try {
-      const r = await clipsApi.checkKey(k)
+      const r = await clipsApi.checkKey()
       setKeyState(r.ok ? 'ok' : 'bad')
-      if (r.ok) {
-        setGeminiKey(k)
-        onToast('success', 'Gemini key works. It is saved in this browser only.')
-      } else {
-        setKeyError(r.error ?? 'Google did not accept this key.')
-      }
+      if (r.ok) onToast('success', 'The Gemini key in .env works.')
+      else setKeyError(r.error ?? 'Google did not accept the key in .env.')
     } catch (e) {
       setKeyState('bad')
       setKeyError(e instanceof Error ? e.message : 'Could not check the key.')
@@ -83,28 +77,38 @@ export function AiSettings({
           {!installed && (
             <p className="field__error">Gemini support isn’t installed on this server (pip install "snipmint[gemini]").</p>
           )}
-          {serverKey && !key && <p className="field__hint">This server already has a Gemini key, so you can leave this empty.</p>}
-          <div className="link-form__row">
-            <input
-              className="input"
-              type="password"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="Gemini API key (AIza…)"
-              aria-label="Gemini API key"
-              value={key}
-              aria-invalid={keyState === 'bad'}
-              onChange={(e) => {
-                setKey(e.target.value)
-                setKeyState('unknown')
-                setKeyError(null)
-                setGeminiKey(e.target.value.trim())
-              }}
-            />
-            <Button variant="secondary" busy={checking} onClick={check}>
-              {keyState === 'ok' ? 'Key works ✓' : 'Check key'}
-            </Button>
-          </div>
+          {serverKey ? (
+            <div className="link-form__row ai-settings__key">
+              <span className="field__hint">Using the Gemini key from the server’s .env file.</span>
+              <Button variant="secondary" busy={checking} onClick={check}>
+                {keyState === 'ok' ? 'Key works ✓' : 'Check key'}
+              </Button>
+            </div>
+          ) : (
+            <div className="ai-settings__howto" role="note">
+              <strong>Add your Gemini key to the .env file</strong>
+              <ol>
+                <li>
+                  Get a key at{' '}
+                  <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">
+                    aistudio.google.com/apikey
+                  </a>
+                  .
+                </li>
+                <li>
+                  In the Snipmint folder (next to <code>docker-compose.yml</code>), open <code>.env</code> (copy{' '}
+                  <code>.env.example</code> if it isn’t there) and set:
+                  <pre className="ai-settings__code">{ENV_LINE}</pre>
+                </li>
+                <li>
+                  Restart Snipmint: <code>docker compose up -d</code>, then reload this page.
+                </li>
+              </ol>
+              <span className="field__hint">
+                The key stays on your computer in .env. It is never typed into this page or stored in the browser.
+              </span>
+            </div>
+          )}
           {keyError && (
             <p className="field__error" role="alert">
               {keyError}
@@ -124,13 +128,6 @@ export function AiSettings({
               }}
             />
           </label>
-          <p className="field__hint">
-            Get a key at{' '}
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">
-              aistudio.google.com/apikey
-            </a>
-            . It stays in this browser and is sent only to your Snipmint server.
-          </p>
         </div>
       )}
     </div>

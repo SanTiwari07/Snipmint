@@ -15,6 +15,7 @@ const clips: ClipsDraft = {
   loudness: false,
   voiceover: { enabled: true, engine: 'edge', voice_id: 'en-GB-RyanNeural' },
   jobId: null,
+  jobKey: null,
   pending: null,
 }
 

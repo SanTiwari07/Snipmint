@@ -8,6 +8,7 @@ centre crop.
 from __future__ import annotations
 
 import logging
+import os
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,6 +18,10 @@ import numpy as np
 from .. import config
 from ..download import download_file
 from ..errors import ModelDownloadError
+
+# OpenCV's DNN prints a harmless "Targets are not supported by the new graph engine" warning
+# for every detector it creates; only real errors should reach the log.
+os.environ.setdefault("OPENCV_LOG_LEVEL", "ERROR")
 
 log = logging.getLogger("snipmint.reframe.faces")
 

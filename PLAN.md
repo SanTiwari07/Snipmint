@@ -94,7 +94,7 @@ All providers implement `pick_moments(transcript, signals, meta, opts) -> list[M
 - Default model `gemini-3.1-flash-lite`.
 - Heuristic signals are passed into the prompt as hints.
 - The full video is sent only on the silent-video path, behind a length guard (about 300 tokens/s).
-- The key comes from env or the `X-Gemini-Key` header, and is never logged or stored.
+- The key comes only from `GEMINI_API_KEY` in `.env` on the server; the browser never sees it. It is never logged or stored elsewhere.
 
 ## 5. Tech stack
 

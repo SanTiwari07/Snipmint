@@ -146,7 +146,7 @@ Priority: **P0** = MVP, **P1** = v1, **P2** = later.
 ### 6.8 Settings and keys
 | ID | Requirement | Pri |
 |---|---|---|
-| ST-1 | Gemini key from `.env` or entered in the UI. Keys entered in the UI stay in the browser only | P1 |
+| ST-1 | Gemini key only from `.env` (`GEMINI_API_KEY`); the UI never asks for it and shows how to add it when missing | P1 |
 | ST-2 | "Check key" button validates the key | P1 |
 | ST-3 | The key is never logged, never written to project files, and never returned by the API | P0 |
 | ST-4 | Model selection (default `gemini-3.1-flash-lite`) | P2 |
