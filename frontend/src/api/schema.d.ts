@@ -771,7 +771,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Check Key */
+        /**
+         * Check Key
+         * @description Test the server's own key (from .env).
+         */
         post: operations["check_key_api_ai_check_key_post"];
         delete?: never;
         options?: never;
@@ -1005,6 +1008,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/metadata/{source_id}/{clip_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve
+         * @description Approve the clip's current metadata for publishing (needed before automation may upload it).
+         */
+        post: operations["approve_api_metadata__source_id___clip_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/metadata/{source_id}/{clip_id}": {
         parameters: {
             query?: never;
@@ -1016,6 +1039,299 @@ export interface paths {
         /** Edit */
         put: operations["edit_api_metadata__source_id___clip_id__put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** N8N Health */
+        get: operations["n8n_health_api_integrations_n8n_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/tasks/due": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** N8N Due */
+        get: operations["n8n_due_api_integrations_n8n_tasks_due_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/tasks/{task_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** N8N Task */
+        get: operations["n8n_task_api_integrations_n8n_tasks__task_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/tasks/{task_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** N8N Publish */
+        post: operations["n8n_publish_api_integrations_n8n_tasks__task_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/tasks/{task_id}/hold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * N8N Hold
+         * @description Workflow A, "not approved" branch: mark the task as waiting for approval.
+         */
+        post: operations["n8n_hold_api_integrations_n8n_tasks__task_id__hold_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/tasks/{task_id}/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** N8N Metadata */
+        post: operations["n8n_metadata_api_integrations_n8n_tasks__task_id__metadata_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** N8N Batch */
+        get: operations["n8n_batch_api_integrations_n8n_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/n8n/executions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** N8N Execution */
+        post: operations["n8n_execution_api_integrations_n8n_executions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_automation_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Settings */
+        put: operations["update_settings_api_automation_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tasks */
+        get: operations["list_tasks_api_automation_tasks_get"];
+        put?: never;
+        /** Create Tasks */
+        post: operations["create_tasks_api_automation_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Batch */
+        get: operations["get_batch_api_automation_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/tasks/{task_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Task */
+        post: operations["cancel_task_api_automation_tasks__task_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/tasks/{task_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Task */
+        post: operations["retry_task_api_automation_tasks__task_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/tasks/{task_id}/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reschedule Task */
+        post: operations["reschedule_task_api_automation_tasks__task_id__reschedule_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/executions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Executions */
+        get: operations["executions_api_automation_executions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/automation/events/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Events */
+        post: operations["retry_events_api_automation_events_retry_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1076,6 +1392,14 @@ export interface components {
             estimate: components["schemas"]["DurationEstimate"];
             /** Cps */
             cps: number;
+        };
+        /** ApprovalRequest */
+        ApprovalRequest: {
+            /**
+             * Approved
+             * @default true
+             */
+            approved: boolean;
         };
         /** BackgroundConfig */
         BackgroundConfig: {
@@ -1311,27 +1635,6 @@ export interface components {
             /** At */
             at?: number | null;
         };
-        /** ClipRef */
-        ClipRef: {
-            /** Clip Id */
-            clip_id: string;
-            /** Start */
-            start: number;
-            /** End */
-            end: number;
-            /**
-             * Title
-             * @default
-             */
-            title: string;
-            /**
-             * Hook Text
-             * @default
-             */
-            hook_text: string;
-            /** Keywords */
-            keywords?: string[];
-        };
         /** ClipSpec */
         ClipSpec: {
             /** Id */
@@ -1429,6 +1732,33 @@ export interface components {
             /** At */
             at: string;
         };
+        /** CreateTasks */
+        CreateTasks: {
+            /** Clips */
+            clips: components["schemas"]["snipmint__automation__store__ClipRef"][];
+            /** Privacy */
+            privacy?: ("private" | "unlisted" | "public") | null;
+            /** Made For Kids */
+            made_for_kids?: boolean | null;
+            /**
+             * Run At
+             * @description Publish at this time (with a time zone). Empty = now.
+             */
+            run_at?: string | null;
+            /**
+             * Batch
+             * @default false
+             */
+            batch: boolean;
+            /** Delay Seconds */
+            delay_seconds?: number | null;
+            /** Concurrency */
+            concurrency?: number | null;
+            /** Channel Id */
+            channel_id?: string | null;
+            /** Language */
+            language?: string | null;
+        };
         /** DisconnectResponse */
         DisconnectResponse: {
             /** Disconnected */
@@ -1507,6 +1837,32 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** ExecutionRef */
+        ExecutionRef: {
+            /** Execution Id */
+            execution_id?: string | null;
+        };
+        /** ExecutionReport */
+        ExecutionReport: {
+            /** Execution Id */
+            execution_id: string;
+            /**
+             * Workflow
+             * @default
+             */
+            workflow: string;
+            /** Status */
+            status: string;
+            /** Task Id */
+            task_id?: string | null;
+            /** Batch Id */
+            batch_id?: string | null;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+        };
         /** ExportConfig */
         ExportConfig: {
             /**
@@ -1542,7 +1898,7 @@ export interface components {
         /** GenerateRequest */
         GenerateRequest: {
             /** Clips */
-            clips: components["schemas"]["ClipRef"][];
+            clips: components["schemas"]["snipmint__server__metadata_api__ClipRef"][];
             /**
              * Language
              * @default en
@@ -1645,8 +2001,24 @@ export interface components {
              * @default 0
              */
             variant: number;
+            /**
+             * Approved
+             * @default false
+             */
+            approved: boolean;
+            /** Approved At */
+            approved_at?: number | null;
+            /** Approved By */
+            approved_by?: ("user" | "auto") | null;
             /** Updated */
             updated?: number;
+        };
+        /** MetadataRun */
+        MetadataRun: {
+            /** Execution Id */
+            execution_id?: string | null;
+            /** Language */
+            language?: string | null;
         };
         /** MetadataSet */
         MetadataSet: {
@@ -1820,6 +2192,14 @@ export interface components {
              */
             provider: "auto" | "gemini" | "fallback";
         };
+        /** Reschedule */
+        Reschedule: {
+            /**
+             * Run At
+             * Format: date-time
+             */
+            run_at: string;
+        };
         /** ScriptWarning */
         ScriptWarning: {
             /** Code */
@@ -1841,6 +2221,27 @@ export interface components {
             seconds: number;
             /** Paragraph Idx */
             paragraph_idx: number;
+        };
+        /** SettingsUpdate */
+        SettingsUpdate: {
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Auto Approve */
+            auto_approve?: boolean | null;
+            /** Language */
+            language?: string | null;
+            /** Privacy */
+            privacy?: ("private" | "unlisted" | "public") | null;
+            /** Made For Kids */
+            made_for_kids?: boolean | null;
+            /** Batch Delay Seconds */
+            batch_delay_seconds?: number | null;
+            /** Batch Concurrency */
+            batch_concurrency?: number | null;
+            /** Max Attempts */
+            max_attempts?: number | null;
+            /** Max Lateness Minutes */
+            max_lateness_minutes?: number | null;
         };
         /** SourceCreated */
         SourceCreated: {
@@ -2018,6 +2419,38 @@ export interface components {
             concurrency: number;
             /** Scopes */
             scopes?: string[];
+        };
+        /** ClipRef */
+        snipmint__automation__store__ClipRef: {
+            /** Job Id */
+            job_id: string;
+            /** Clip File */
+            clip_file: string;
+            /** Clip Id */
+            clip_id: string;
+            /** Source Id */
+            source_id: string;
+        };
+        /** ClipRef */
+        snipmint__server__metadata_api__ClipRef: {
+            /** Clip Id */
+            clip_id: string;
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /**
+             * Hook Text
+             * @default
+             */
+            hook_text: string;
+            /** Keywords */
+            keywords?: string[];
         };
     };
     responses: never;
@@ -3981,6 +4414,42 @@ export interface operations {
             };
         };
     };
+    approve_api_metadata__source_id___clip_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                clip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     edit_api_metadata__source_id___clip_id__put: {
         parameters: {
             query?: never;
@@ -4013,6 +4482,589 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    n8n_health_api_integrations_n8n_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    n8n_due_api_integrations_n8n_tasks_due_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    n8n_task_api_integrations_n8n_tasks__task_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    n8n_publish_api_integrations_n8n_tasks__task_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExecutionRef"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    n8n_hold_api_integrations_n8n_tasks__task_id__hold_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExecutionRef"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    n8n_metadata_api_integrations_n8n_tasks__task_id__metadata_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MetadataRun"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    n8n_batch_api_integrations_n8n_batches__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    n8n_execution_api_integrations_n8n_executions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExecutionReport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_automation_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    update_settings_api_automation_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tasks_api_automation_tasks_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_tasks_api_automation_tasks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTasks"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_batch_api_automation_batches__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_task_api_automation_tasks__task_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_task_api_automation_tasks__task_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reschedule_task_api_automation_tasks__task_id__reschedule_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Reschedule"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    executions_api_automation_executions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_events_api_automation_events_retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
                 };
             };
         };

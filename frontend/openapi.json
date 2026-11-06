@@ -1970,6 +1970,7 @@
           "ai"
         ],
         "summary": "Check Key",
+        "description": "Test the server's own key (from .env).",
         "operationId": "check_key_api_ai_check_key_post",
         "responses": {
           "200": {
@@ -2612,6 +2613,68 @@
         }
       }
     },
+    "/api/metadata/{source_id}/{clip_id}/approve": {
+      "post": {
+        "tags": [
+          "metadata"
+        ],
+        "summary": "Approve",
+        "description": "Approve the clip's current metadata for publishing (needed before automation may upload it).",
+        "operationId": "approve_api_metadata__source_id___clip_id__approve_post",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "clip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clip Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetadataRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/metadata/{source_id}/{clip_id}": {
       "put": {
         "tags": [
@@ -2666,6 +2729,791 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/health": {
+      "get": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Health",
+        "operationId": "n8n_health_api_integrations_n8n_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response N8N Health Api Integrations N8N Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/tasks/due": {
+      "get": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Due",
+        "operationId": "n8n_due_api_integrations_n8n_tasks_due_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response N8N Due Api Integrations N8N Tasks Due Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/tasks/{task_id}": {
+      "get": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Task",
+        "operationId": "n8n_task_api_integrations_n8n_tasks__task_id__get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response N8N Task Api Integrations N8N Tasks  Task Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/tasks/{task_id}/publish": {
+      "post": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Publish",
+        "operationId": "n8n_publish_api_integrations_n8n_tasks__task_id__publish_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutionRef"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response N8N Publish Api Integrations N8N Tasks  Task Id  Publish Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/tasks/{task_id}/hold": {
+      "post": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Hold",
+        "description": "Workflow A, \"not approved\" branch: mark the task as waiting for approval.",
+        "operationId": "n8n_hold_api_integrations_n8n_tasks__task_id__hold_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutionRef"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response N8N Hold Api Integrations N8N Tasks  Task Id  Hold Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/tasks/{task_id}/metadata": {
+      "post": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Metadata",
+        "operationId": "n8n_metadata_api_integrations_n8n_tasks__task_id__metadata_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataRun"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response N8N Metadata Api Integrations N8N Tasks  Task Id  Metadata Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/batches/{batch_id}": {
+      "get": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Batch",
+        "operationId": "n8n_batch_api_integrations_n8n_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response N8N Batch Api Integrations N8N Batches  Batch Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/n8n/executions": {
+      "post": {
+        "tags": [
+          "n8n"
+        ],
+        "summary": "N8N Execution",
+        "operationId": "n8n_execution_api_integrations_n8n_executions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecutionReport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response N8N Execution Api Integrations N8N Executions Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/status": {
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_automation_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Status Api Automation Status Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/settings": {
+      "put": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Update Settings",
+        "operationId": "update_settings_api_automation_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Update Settings Api Automation Settings Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/tasks": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Create Tasks",
+        "operationId": "create_tasks_api_automation_tasks_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTasks"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Tasks Api Automation Tasks Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "List Tasks",
+        "operationId": "list_tasks_api_automation_tasks_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Tasks Api Automation Tasks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/batches/{batch_id}": {
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Get Batch",
+        "operationId": "get_batch_api_automation_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Batch Api Automation Batches  Batch Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/tasks/{task_id}/cancel": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Cancel Task",
+        "operationId": "cancel_task_api_automation_tasks__task_id__cancel_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Cancel Task Api Automation Tasks  Task Id  Cancel Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/tasks/{task_id}/retry": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Retry Task",
+        "operationId": "retry_task_api_automation_tasks__task_id__retry_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Retry Task Api Automation Tasks  Task Id  Retry Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/tasks/{task_id}/reschedule": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Reschedule Task",
+        "operationId": "reschedule_task_api_automation_tasks__task_id__reschedule_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reschedule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Reschedule Task Api Automation Tasks  Task Id  Reschedule Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/executions": {
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Executions",
+        "operationId": "executions_api_automation_executions_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 1,
+              "default": 30,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Executions Api Automation Executions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/automation/events/retry": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Retry Events",
+        "operationId": "retry_events_api_automation_events_retry_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "type": "object",
+                  "title": "Response Retry Events Api Automation Events Retry Post"
                 }
               }
             }
@@ -2802,6 +3650,17 @@
           "cps"
         ],
         "title": "AnalyzeResponse"
+      },
+      "ApprovalRequest": {
+        "properties": {
+          "approved": {
+            "type": "boolean",
+            "title": "Approved",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "ApprovalRequest"
       },
       "BackgroundConfig": {
         "properties": {
@@ -3305,50 +4164,6 @@
         ],
         "title": "ClipPreviewRequest"
       },
-      "ClipRef": {
-        "properties": {
-          "clip_id": {
-            "type": "string",
-            "maxLength": 80,
-            "minLength": 1,
-            "title": "Clip Id"
-          },
-          "start": {
-            "type": "number",
-            "minimum": 0.0,
-            "title": "Start"
-          },
-          "end": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "title": "End"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title",
-            "default": ""
-          },
-          "hook_text": {
-            "type": "string",
-            "title": "Hook Text",
-            "default": ""
-          },
-          "keywords": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Keywords"
-          }
-        },
-        "type": "object",
-        "required": [
-          "clip_id",
-          "start",
-          "end"
-        ],
-        "title": "ClipRef"
-      },
       "ClipSpec": {
         "properties": {
           "id": {
@@ -3582,6 +4397,117 @@
           "at"
         ],
         "title": "Consent"
+      },
+      "CreateTasks": {
+        "properties": {
+          "clips": {
+            "items": {
+              "$ref": "#/components/schemas/snipmint__automation__store__ClipRef"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Clips"
+          },
+          "privacy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "private",
+                  "unlisted",
+                  "public"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Privacy"
+          },
+          "made_for_kids": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Made For Kids"
+          },
+          "run_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run At",
+            "description": "Publish at this time (with a time zone). Empty = now."
+          },
+          "batch": {
+            "type": "boolean",
+            "title": "Batch",
+            "default": false
+          },
+          "delay_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3600.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delay Seconds"
+          },
+          "concurrency": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 4.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concurrency"
+          },
+          "channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Id"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "clips"
+        ],
+        "title": "CreateTasks"
       },
       "DisconnectResponse": {
         "properties": {
@@ -3819,6 +4745,81 @@
         ],
         "title": "EditRequest"
       },
+      "ExecutionRef": {
+        "properties": {
+          "execution_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Id"
+          }
+        },
+        "type": "object",
+        "title": "ExecutionRef"
+      },
+      "ExecutionReport": {
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Execution Id"
+          },
+          "workflow": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Workflow",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^(running|success|error|waiting|cancelled)$",
+            "title": "Status"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Message",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "execution_id",
+          "status"
+        ],
+        "title": "ExecutionReport"
+      },
       "ExportConfig": {
         "properties": {
           "video": {
@@ -3931,7 +4932,7 @@
         "properties": {
           "clips": {
             "items": {
-              "$ref": "#/components/schemas/ClipRef"
+              "$ref": "#/components/schemas/snipmint__server__metadata_api__ClipRef"
             },
             "type": "array",
             "maxItems": 30,
@@ -4159,6 +5160,37 @@
             "title": "Variant",
             "default": 0
           },
+          "approved": {
+            "type": "boolean",
+            "title": "Approved",
+            "default": false
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "auto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
           "updated": {
             "type": "number",
             "title": "Updated"
@@ -4173,6 +5205,35 @@
           "metadata"
         ],
         "title": "MetadataRecord"
+      },
+      "MetadataRun": {
+        "properties": {
+          "execution_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Id"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "title": "MetadataRun"
       },
       "MetadataSet": {
         "properties": {
@@ -4580,6 +5641,20 @@
         "type": "object",
         "title": "RegenerateRequest"
       },
+      "Reschedule": {
+        "properties": {
+          "run_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Run At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_at"
+        ],
+        "title": "Reschedule"
+      },
       "ScriptWarning": {
         "properties": {
           "code": {
@@ -4641,6 +5716,124 @@
           "paragraph_idx"
         ],
         "title": "SentenceInfo"
+      },
+      "SettingsUpdate": {
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "auto_approve": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Approve"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "privacy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "private",
+                  "unlisted",
+                  "public"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Privacy"
+          },
+          "made_for_kids": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Made For Kids"
+          },
+          "batch_delay_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3600.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Delay Seconds"
+          },
+          "batch_concurrency": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 4.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Concurrency"
+          },
+          "max_attempts": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Attempts"
+          },
+          "max_lateness_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10080.0,
+                "minimum": 5.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Lateness Minutes"
+          }
+        },
+        "type": "object",
+        "title": "SettingsUpdate"
       },
       "SourceCreated": {
         "properties": {
@@ -5026,6 +6219,85 @@
           "encryption_available"
         ],
         "title": "YouTubeStatus"
+      },
+      "snipmint__automation__store__ClipRef": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Job Id"
+          },
+          "clip_file": {
+            "type": "string",
+            "pattern": "^clip_\\d{2}\\.mp4$",
+            "title": "Clip File"
+          },
+          "clip_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Clip Id"
+          },
+          "source_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Source Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "clip_file",
+          "clip_id",
+          "source_id"
+        ],
+        "title": "ClipRef"
+      },
+      "snipmint__server__metadata_api__ClipRef": {
+        "properties": {
+          "clip_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Clip Id"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "End"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": ""
+          },
+          "hook_text": {
+            "type": "string",
+            "title": "Hook Text",
+            "default": ""
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Keywords"
+          }
+        },
+        "type": "object",
+        "required": [
+          "clip_id",
+          "start",
+          "end"
+        ],
+        "title": "ClipRef"
       }
     }
   }

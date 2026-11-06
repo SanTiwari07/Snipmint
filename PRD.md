@@ -168,6 +168,16 @@ Priority: **P0** = MVP, **P1** = v1, **P2** = later.
 
 Constraints (YouTube Data API, checked 2026-11-06): since the 2 Nov 2026 revision, uploads from unverified API projects are no longer restricted to private. `videos.insert` uses its own Video Uploads quota bucket, by default 100 calls/day (1 unit each); quotas are project-specific. External OAuth apps in *Testing* get refresh tokens that expire after 7 days.
 
+### 6.10 Workflow automation with n8n (optional, off without SNIPMINT_N8N_WEBHOOK_SECRET)
+| ID | Requirement | Pri |
+|---|---|---|
+| AU-N1 | n8n orchestrates only; Snipmint stays the source of truth for metadata, approval, OAuth, uploads and status. n8n never receives Google credentials, tokens, the Gemini key or the app token | P0 |
+| AU-N2 | Approval: metadata must be approved before automation publishes it (edits withdraw approval); optional opt-in auto-approve | P0 |
+| AU-N3 | Workflows: automated publishing, scheduled publishing (persistent in Snipmint, UTC, cancel/reschedule, survives n8n restarts), batch publishing (delay, concurrency, independent tracking, summary), metadata generation via the existing service, notifications, error handling | P1 |
+| AU-N4 | Shared-secret or HMAC-signed requests both ways, validation, idempotency keys, execution ids, rate limiting, redacted logs, signed event outbox with backoff | P0 |
+| AU-N5 | Retries with exponential backoff and an attempt limit; permanent failures are not retried; a failed or repeated n8n run can never upload a clip twice | P0 |
+| AU-N6 | Publish screen: n8n status, automation on/off, task statuses (waiting for approval, scheduled, processing, uploading, published, failed, cancelled), executions, retry/cancel/reschedule; usable when n8n is offline | P1 |
+
 ## 7. Free vs Advanced: what the user gets
 
 | Capability | Free (default) | Advanced (Gemini key) |
@@ -222,4 +232,5 @@ Constraints (YouTube Data API, checked 2026-11-06): since the 2 Nov 2026 revisio
 | **M2 Smart framing** | RF-2,3,6 · EX-3,4 | Speaker stays in frame in ≥ 90% of test clips |
 | **M3 Advanced AI** | AN-2,8,9 · RF-4 · CP-4 · ST-1-3,5 | Gemini mode works end to end; a bad key falls back cleanly |
 | **M4 Extras** | IN-2,4,6 · AN-3,10 · CP-5,6 · AU-2,3 · EX-5 · ST-4 | Feature complete for v1 |
+| **M6 Automation** | AU-N1..6 | `docker compose -f docker-compose.yml -f docker-compose.n8n.yml up` runs n8n; imported workflows publish an approved clip; tests pass with n8n and Google mocked |
 | **M5 Publishing** | YT-1..9 | With a development OAuth client on localhost, a clip goes from Make clips to a public, unlisted or private YouTube Short; all tests pass with Google mocked |

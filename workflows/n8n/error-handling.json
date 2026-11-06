@@ -1,0 +1,189 @@
+{
+  "name": "Snipmint: error handling",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e975721b-e068-55fd-93e7-d8fb20928c3a",
+      "name": "When a workflow fails",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String(($json.execution && $json.execution.id) || $execution.id), workflow: ($json.workflow && $json.workflow.name) || 'unknown', status: 'error', message: String(($json.execution && $json.execution.error && $json.execution.error.message) || 'failed').slice(0, 900) }) }}"
+      },
+      "id": "1da8c044-3dc4-50b8-8fd2-68327c76886c",
+      "name": "Record failure in Snipmint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = $input.first().json;\nconst name = (e.workflow && e.workflow.name) || 'a workflow';\nconst err = (e.execution && e.execution.error && e.execution.error.message) || (e.trigger && e.trigger.error && e.trigger.error.message) || 'unknown error';\nreturn [{ json: { subject: `n8n: ${name} failed`, message: `${name} failed: ${err}. Execution ${(e.execution && e.execution.id) || '-'}${e.execution && e.execution.url ? ' ' + e.execution.url : ''}` } }];"
+      },
+      "id": "be58f6bb-fbfc-5eb2-83de-15a6739cf857",
+      "name": "Write alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_CHAT_ID",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "id": "328dcaf7-e4ec-5d71-a569-1de85b7af9cc",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        20
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramCred",
+          "name": "Telegram"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Disabled: add your credentials, then enable."
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "2b1144de-6dbb-5e24-8e20-ac8ff8ddea0a",
+      "name": "Discord",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        720,
+        200
+      ],
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "discordCred",
+          "name": "Discord webhook"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Disabled: add your credentials, then enable."
+    },
+    {
+      "parameters": {
+        "fromEmail": "snipmint@example.com",
+        "toEmail": "you@example.com",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "04710137-6a10-502a-a794-c1ac0fc73c6f",
+      "name": "Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        380
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtpCred",
+          "name": "SMTP"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Disabled: add your credentials, then enable."
+    }
+  ],
+  "connections": {
+    "When a workflow fails": {
+      "main": [
+        [
+          {
+            "node": "Record failure in Snipmint",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Write alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write alert": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "snipmint": {
+      "description": "Set this as the Error Workflow of the other Snipmint workflows: it records the failed execution in Snipmint (shown on the Publish screen) and can alert you. It never retries uploads itself: Snipmint decides retries with backoff and an attempt limit."
+    }
+  },
+  "tags": []
+}

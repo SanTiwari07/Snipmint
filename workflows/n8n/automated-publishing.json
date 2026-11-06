@@ -1,0 +1,430 @@
+{
+  "name": "Snipmint: automated publishing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "snipmint/clip-ready",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "f356ef85-10cc-52dc-91f7-f124ae03fb5d",
+      "name": "Clip ready",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintWebhookHeader",
+          "name": "Snipmint webhook"
+        }
+      },
+      "webhookId": "ca16bd4c-e208-5c0b-937f-1aaf9d51633f"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $json.body.data.task_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "3deaa710-b90a-545b-b9b0-18bf246c0ecd",
+      "name": "Get task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d2cb0587-f0b3-5a32-b9ff-5982a7b267c2",
+              "leftValue": "={{ $json.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f093fb1a-ad07-57d8-81f2-7af15f686936",
+      "name": "Metadata approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $json.id }}/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.id }}:publish:{{ $json.updated }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) }) }}"
+      },
+      "id": "54468c4d-05b0-594d-85ea-4ecea400e1b3",
+      "name": "Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "c019a751-06b8-58f8-8e27-cd1346593bec",
+      "name": "Wait 30 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        -120
+      ],
+      "webhookId": "88a6e19c-e336-5033-9fd3-040d1ce600ca"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $('Publish').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "f8e4d2e7-cad2-52e6-bdb5-039f88ff224e",
+      "name": "Check upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "93bfec18-eeb8-50fe-a3e2-b85b21741bbf",
+              "leftValue": "={{ ['PROCESSING', 'UPLOADING'].includes($json.status) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "98745922-2a13-5e5a-b2cd-a97102f2464d",
+              "leftValue": "={{ $runIndex }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f1152cfe-2f48-5137-8490-0b5cf8bbade7",
+      "name": "Still uploading?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) + ($json.id ? ':' + $json.id : ''), workflow: 'automated-publishing', status: ($json.status === 'PUBLISHED' ? 'success' : ($json.status === 'FAILED' ? 'error' : 'waiting')), task_id: $json.id, batch_id: null, message: String($json.label + ($json.video_url ? ' ' + $json.video_url : '') + ($json.error ? ': ' + $json.error : '')).slice(0, 900) }) }}"
+      },
+      "id": "e3482690-f853-5e92-9422-b0c359b16513",
+      "name": "Report result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -40
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $json.id }}/hold",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) }) }}"
+      },
+      "id": "1805ecce-cb5d-57fe-b908-67ba151634d0",
+      "name": "Hold for approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) + ($json.id ? ':' + $json.id : ''), workflow: 'automated-publishing', status: 'waiting', task_id: $json.id, batch_id: null, message: String('Waiting for metadata approval').slice(0, 900) }) }}"
+      },
+      "id": "77b9d4da-e0ab-5121-ae10-23d450001764",
+      "name": "Report waiting",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Clip ready": {
+      "main": [
+        [
+          {
+            "node": "Get task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get task": {
+      "main": [
+        [
+          {
+            "node": "Metadata approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Metadata approved?": {
+      "main": [
+        [
+          {
+            "node": "Publish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Hold for approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 s": {
+      "main": [
+        [
+          {
+            "node": "Check upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check upload": {
+      "main": [
+        [
+          {
+            "node": "Still uploading?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Still uploading?": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Report result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hold for approval": {
+      "main": [
+        [
+          {
+            "node": "Report waiting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "snipmint": {
+      "description": "A: a clip is ready -> check approval -> publish through Snipmint -> track -> report."
+    }
+  },
+  "tags": []
+}

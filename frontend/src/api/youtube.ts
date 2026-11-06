@@ -135,6 +135,9 @@ export interface MetadataRecord {
   note: string | null
   variant: number
   updated: number
+  /** Approved for publishing; any edit or regeneration withdraws it. */
+  approved?: boolean
+  approved_by?: 'user' | 'auto' | null
 }
 
 export interface MetadataOptions {
@@ -184,6 +187,8 @@ export const metadataApi = {
       field,
       language: language ?? null,
     }),
+  approve: (sourceId: string, clipId: string, approved: boolean) =>
+    postJson<MetadataRecord>(`/api/metadata/${enc(sourceId)}/${enc(clipId)}/approve`, { approved }),
   edit: async (sourceId: string, clipId: string, changes: Partial<ClipMetadata>): Promise<MetadataRecord> =>
     (await send(`/api/metadata/${enc(sourceId)}/${enc(clipId)}`, { ...json({ changes }), method: 'PUT' })).json(),
 }

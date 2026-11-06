@@ -1,0 +1,220 @@
+{
+  "name": "Snipmint: scheduled publishing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "1070d354-a744-5334-99fb-23fa5bd4c387",
+      "name": "Every minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/due?limit=25",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "0f7946cb-959a-5daf-8fb6-5027dbc57ccb",
+      "name": "Due tasks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "29e5ef0b-0ede-5031-86fa-d47f5388f056",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "56e1f730-b73c-50a8-92eb-63937445fb29",
+      "name": "Is a task?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $json.id }}/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.id }}:due:{{ $json.updated }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) }) }}"
+      },
+      "id": "b96373a6-4c3f-56df-820f-051c0965d87a",
+      "name": "Publish due task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) + ($json.id ? ':' + $json.id : ''), workflow: 'scheduled-publishing', status: ($json.outcome === 'started' ? 'success' : ($json.error ? 'error' : 'waiting')), task_id: $json.id, batch_id: null, message: String(($json.outcome || 'error') + ' - ' + ($json.label || $json.error || '')).slice(0, 900) }) }}"
+      },
+      "id": "768c953d-86fb-5f60-8c4e-84819dd352c0",
+      "name": "Record execution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Every minute": {
+      "main": [
+        [
+          {
+            "node": "Due tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Due tasks": {
+      "main": [
+        [
+          {
+            "node": "Is a task?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is a task?": {
+      "main": [
+        [
+          {
+            "node": "Publish due task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish due task": {
+      "main": [
+        [
+          {
+            "node": "Record execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "snipmint": {
+      "description": "B: every minute, ask Snipmint what is due (schedules, retries after backoff, missed or newly approved tasks) and publish each. Snipmint stores every schedule, so an n8n restart loses nothing."
+    }
+  },
+  "tags": []
+}

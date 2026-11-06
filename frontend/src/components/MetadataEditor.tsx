@@ -158,6 +158,32 @@ export function MetadataEditor({
           Regenerate all (keeps your edits)
         </Button>
       </div>
+      <div className={`meta-approval ${record.approved ? 'meta-approval--on' : ''}`}>
+        <span className="meta-approval__text">
+          <strong>{record.approved ? 'Approved for publishing' : 'Not approved yet'}</strong>
+          <span className="field__hint">
+            {record.approved
+              ? record.approved_by === 'auto'
+                ? 'Approved automatically (auto-approve is on). Any edit withdraws it.'
+                : 'Automation may publish this text. Any edit or regeneration withdraws the approval.'
+              : 'Automation only publishes metadata you approved. Check the text first: it is written from the clip and may need fixes.'}
+          </span>
+        </span>
+        <Button
+          variant={record.approved ? 'secondary' : 'primary'}
+          disabled={busy !== null || Object.keys(drafts).length > 0 || (!record.approved && duplicateTitle)}
+          title={Object.keys(drafts).length ? 'Finish your edit first' : undefined}
+          onClick={async () => {
+            try {
+              onRecord(await metadataApi.approve(record.source_id, record.clip_id, !record.approved))
+            } catch (e) {
+              toast('error', e instanceof Error ? e.message : 'Could not change the approval.')
+            }
+          }}
+        >
+          {record.approved ? 'Withdraw approval' : 'Approve'}
+        </Button>
+      </div>
       {record.note && <p className="field__hint field__hint--warn">{record.note}</p>}
       {duplicateTitle && <p className="field__error">Another clip from this video has the same title. Titles must be unique.</p>}
 

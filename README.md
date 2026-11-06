@@ -160,6 +160,129 @@ Delete a folder in `sources/` or `jobs/` to free space; Snipmint makes it again 
 | A clip's framing looks wrong | On **Make clips**, choose another framing (*Follow speaker*, *Two people*, *Whole picture* or *Centre*) and make it again |
 | Advanced mode says "Used the free analysis" | Press **Check key**; check the key and its quota in Google AI Studio |
 
+## Publish to YouTube (optional)
+
+Snipmint can upload the clips it made to your YouTube channel as Shorts. It is **off** until you
+add Google OAuth credentials; everything else works the same without them.
+
+**What you get:** connect/disconnect a channel, per-clip metadata (title with 3 ideas and why one
+was picked, description, 3-5 hashtags, tags, hook, pinned comment, category, SEO keywords) in
+English, Hindi, Hinglish, Marathi and more, an editor (regenerate, edit or copy any field), batch
+publishing with a confirmation step and a live dashboard, and scheduled publishing.
+
+### 1. Set up Google Cloud (once, about 10 minutes)
+
+1. Open the [Google Cloud console](https://console.cloud.google.com/) and **create a project**
+   (for example "Snipmint").
+2. **APIs & Services → Library**: search for **YouTube Data API v3** and click **Enable**.
+3. **APIs & Services → OAuth consent screen** (Google Auth Platform → Branding/Audience):
+   - User type **External**, app name "Snipmint", your e-mail as support and developer contact.
+   - **Data access / scopes**: add `.../auth/youtube.upload` and `.../auth/youtube.readonly`.
+   - **Audience → Test users**: add the Google account that owns your channel.
+   - **Testing mode warning:** while an *External* app's publishing status is *Testing*, only test
+     users can sign in and Google expires the refresh token after **7 days**. Snipmint then asks you to
+     connect again. Publish the app (Audience → *Publish app*) to avoid this; Google may ask for
+     verification of the YouTube scopes before you can.
+4. **APIs & Services → Credentials → Create credentials → OAuth client ID**, type **Web application**.
+   Use **two clients**, one per environment, so development never touches production settings:
+
+   | Client | Authorized redirect URI |
+   |---|---|
+   | *Snipmint (development)* | `http://localhost:8000/api/youtube/oauth/callback` |
+   | *Snipmint (production)* | `https://<your-host>/api/youtube/oauth/callback`, or for a Docker install used only on this computer `http://localhost:8000/api/youtube/oauth/callback` |
+
+   Google only accepts plain `http` for `localhost` / loopback addresses; anything public must be
+   `https`. Snipmint checks this at start-up and shows the problem on the Publish screen.
+   Google compares the URI exactly, so also add `http://127.0.0.1:8000/...` if you open Snipmint that way.
+
+### 2. Local development (no deployment needed)
+
+```bash
+cp .env.development.example .env.development   # fill in the development client
+snipmint serve --dev                           # API on :8000, reads .env.development
+cd frontend && npm run dev                     # UI on :5173
+```
+
+`.env.development` is read only by `snipmint serve --dev` (or `--env-file <file>`) and by
+`docker-compose.dev.yml`. In `--dev` mode an empty `GOOGLE_REDIRECT_URI` means
+`http://localhost:<SNIPMINT_PORT>/api/youtube/oauth/callback`, and after signing in you land back on
+the Vite UI (`SNIPMINT_UI_URL`, default `http://localhost:5173` in dev). Open the UI at
+`http://localhost`, not `127.0.0.1`, so the sign-in cookie matches the callback host (the Publish
+screen warns you when they differ).
+
+### 3. Production / Docker
+
+Put the **production** client in `.env` (copied from `.env.example`); `docker compose up --build`
+reads only that file:
+
+```env
+GOOGLE_CLIENT_ID=1234-abc.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-...
+GOOGLE_REDIRECT_URI=https://clips.example.com/api/youtube/oauth/callback
+SNIPMINT_SECRET_KEY=<a long random string>   # encrypts the stored sign-in
+SNIPMINT_TOKEN=<a long random string>        # required when Snipmint is reachable from the network
+```
+
+For a Docker install used on the same computer, `GOOGLE_REDIRECT_URI=http://localhost:8000/api/youtube/oauth/callback`
+is fine; open Snipmint at `http://localhost:8000`. The encrypted sign-in lives in
+`./data/integrations/` (never in project files, job folders or exports). Set `SNIPMINT_SECRET_KEY` so
+the key isn't stored next to the data. Restart Snipmint, make some clips, then click
+**Publish to YouTube** on the *Make clips* screen.
+
+### 4. Limits you should know
+
+- **Visibility:** pick *Public*, *Unlisted* or *Private*; Snipmint sends exactly that as
+  `status.privacyStatus`. Since the YouTube Data API revision of 2 November 2026, uploads from
+  unverified API projects are no longer forced to private. If YouTube still sets a different
+  visibility (for example a channel default or a policy review), the dashboard says so instead of
+  claiming the one you asked for.
+- **Quota:** `videos.insert` has its own *Video Uploads* quota bucket. The default is
+  **100 upload calls a day** per Google Cloud project, but quotas are project-specific: check yours
+  under *Google Cloud console → APIs & Services → YouTube Data API v3 → Quotas* and request more
+  there. Hitting the limit shows a clear error; retry after midnight Pacific time.
+- **Scheduling** uploads the clip right away as *private* with a publish time (`status.publishAt`,
+  which YouTube only accepts on private videos); YouTube makes it public at that time even if
+  Snipmint is off. Scheduled items can be cancelled in Snipmint until their upload finishes; after
+  that, change or cancel the schedule in YouTube Studio (Snipmint only has upload permission, not
+  permission to edit videos).
+- Uploads are resumable: a network hiccup is retried with exponential backoff, and uploads a restart
+  interrupted continue on the next start. The same clip file can't be sent to the same channel twice
+  unless you tick *Upload again anyway*.
+- Metadata is written only from the clip's transcript. Without a Gemini key a free builder uses the
+  speaker's own sentences (it can't translate); with a key, Gemini writes it in the language you pick.
+- Follow the [YouTube API Services Terms](https://developers.google.com/youtube/terms/api-services-terms-of-service)
+  and Google's OAuth policies: only publish videos you have the rights to.
+
+### Security
+
+The sign-in uses the OAuth authorization-code flow on the server with PKCE and a single-use `state`
+bound to your browser. Tokens are encrypted at rest (Fernet), never sent to the web app, never written
+to logs, projects or exports, and **Disconnect** revokes them at Google. Snipmint asks only for
+`youtube.upload` and `youtube.readonly`.
+
+## Workflow automation with n8n (optional)
+
+[n8n](https://n8n.io) can run Snipmint's publishing for you: publish approved clips as soon as
+they are made, at a set time, or in batches with a delay between uploads, and send you a Telegram,
+Discord or e-mail message about the result. Snipmint stays in charge: metadata, **your approval**,
+the YouTube sign-in and every upload happen in Snipmint; n8n only decides *when* to ask for them,
+using a shared secret. Nothing changes if you don't use it.
+
+```text
+ Snipmint web app ──> Snipmint API (source of truth) ──signed events──> n8n
+                        ▲   │ metadata, approval, OAuth,                │ schedules, batches,
+                        │   │ uploads, status                           │ retries, notifications
+                        │   ▼                                           │
+                        │  YouTube Data API                             │
+                        └────────── /api/integrations/n8n/* (shared secret) ┘
+```
+
+Quick start: set `SNIPMINT_N8N_WEBHOOK_SECRET`, `N8N_ENCRYPTION_KEY` and `N8N_DB_PASSWORD` in `.env`, run
+`docker compose -f docker-compose.yml -f docker-compose.n8n.yml up -d`, open n8n on
+`http://localhost:5678`, import the files in [`workflows/n8n/`](workflows/n8n/), then turn
+**Automation** on in Snipmint's Publish screen. The full guide (credentials, each workflow, monitoring
+and recovery) is [docs/n8n.md](docs/n8n.md).
+
 ## Development
 
 Snipmint is a Python package (FastAPI, ffmpeg, faster-whisper, OpenCV) with a React + TypeScript web app.

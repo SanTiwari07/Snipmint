@@ -53,7 +53,7 @@ from ..pipeline.speak import preview_audio
 from ..project import ProjectConfig
 from ..script import analyze_script, format_duration, parse_duration, plan
 from ..script import duration as dur
-from . import clips_api, metadata_api, youtube_api
+from . import automation_api, clips_api, metadata_api, youtube_api
 from . import schemas as S
 
 log = logging.getLogger("snipmint.server")
@@ -112,6 +112,7 @@ def create_app(
     static_dir: Path | None = None,
     demo: bool = False,
     youtube: youtube_api.YouTubeIntegration | None = None,
+    automation: automation_api.AutomationIntegration | None = None,
 ) -> FastAPI:
     runner = runner or JobRunner()
     model_store.apply()  # downloads go to the model folder the person chose
@@ -121,7 +122,12 @@ def create_app(
         youtube = getattr(app.state, "youtube", None)
         if youtube is not None:
             youtube.startup()  # picks up uploads a restart interrupted
+        auto = getattr(app.state, "automation", None)
+        if auto is not None:
+            auto.startup()  # n8n: event delivery + upload listener (only when configured)
         yield
+        if auto is not None:
+            auto.shutdown()
         if youtube is not None:
             youtube.shutdown()
         runner.shutdown()
@@ -155,7 +161,8 @@ def create_app(
                 request.method != "GET"
                 and path.startswith(("/api/fonts", "/api/backgrounds", "/api/voices/clone",
                                     "/api/voices/custom", "/api/engines/", "/api/presets/styles",
-                                    "/api/storage", "/api/youtube"))
+                                    "/api/storage", "/api/youtube", "/api/automation",
+                                    "/api/integrations"))
             )  # fmt: skip
             if blocked:
                 return _error(
@@ -169,8 +176,10 @@ def create_app(
         @app.middleware("http")
         async def require_token(request: Request, call_next):
             # the OAuth callback is a browser redirect from Google: guarded by state + cookie + PKCE
+            # n8n authenticates with its own shared secret (see automation_api), never the app token
             open_paths = ("/api/health", youtube_api.CALLBACK_PATH)
-            if request.url.path.startswith("/api/") and request.url.path not in open_paths:
+            n8n_path = request.url.path.startswith(automation_api.N8N_PREFIX + "/")
+            if request.url.path.startswith("/api/") and request.url.path not in open_paths and not n8n_path:
                 header = request.headers.get("authorization", "")
                 supplied = header[7:] if header.lower().startswith("bearer ") else None
                 supplied = supplied or request.query_params.get("token")
@@ -628,8 +637,9 @@ def create_app(
 
     # ------------------------------------- YouTube publishing (optional) and metadata
 
-    youtube_api.register(app, runner, dev=dev, integration=youtube)
+    yt = youtube_api.register(app, runner, dev=dev, integration=youtube)
     metadata_api.register(app)
+    automation_api.register(app, yt, integration=automation)
 
     # -------------------------------------------------------------- static
 

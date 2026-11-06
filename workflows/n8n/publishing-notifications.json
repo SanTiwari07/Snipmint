@@ -1,0 +1,165 @@
+{
+  "name": "Snipmint: publishing notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "snipmint/notify",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "7f83f173-1370-5fb4-a72f-5de777cc0909",
+      "name": "Snipmint event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintWebhookHeader",
+          "name": "Snipmint webhook"
+        }
+      },
+      "webhookId": "d3156dad-d5f1-5327-825f-e7ceeb55eb79"
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = [];\nfor (const item of $input.all()) {\n  const ev = item.json.body || {};\n  const d = ev.data || {};\n  const title = d.title ? `\"${d.title}\"` : 'A clip';\n  let subject, message;\n  switch (ev.type) {\n    case 'upload.succeeded':\n      subject = 'Published on YouTube'; message = `${title} is on YouTube: ${d.video_url || ''}`; break;\n    case 'upload.failed':\n      subject = 'Upload failed'; message = `${title} could not be uploaded: ${d.error || 'unknown error'}` +\n        (d.will_retry ? ' (Snipmint will retry)' : ''); break;\n    case 'schedule.triggered':\n      subject = 'Scheduled upload started'; message = `${title} (scheduled for ${d.run_at}) is uploading now.`; break;\n    case 'batch.completed':\n      subject = 'Batch finished'; message = `Batch ${d.batch_id}: ${d.succeeded} published, ${d.failed} failed, ` +\n        `${d.skipped} skipped, ${d.pending} pending.`; break;\n    case 'metadata.awaiting_approval':\n      subject = 'Metadata waiting for approval'; message = `${title}: review and approve its title and description in Snipmint before it can be published.`; break;\n    default:\n      subject = 'Snipmint'; message = `${ev.type}: ${JSON.stringify(d).slice(0, 300)}`;\n  }\n  out.push({ json: { type: ev.type, subject, message } });\n}\nreturn out;"
+      },
+      "id": "6c2fb69b-7a08-5aac-bf22-5e9cc4f4c339",
+      "name": "Write message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_CHAT_ID",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "id": "bec6977e-c9ff-55e7-935a-9d3fa8d07c34",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        -180
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegramCred",
+          "name": "Telegram"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Disabled: add your credentials, then enable."
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "d021f020-14b3-5693-817d-0fe4216f6381",
+      "name": "Discord",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "discordCred",
+          "name": "Discord webhook"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Disabled: add your credentials, then enable."
+    },
+    {
+      "parameters": {
+        "fromEmail": "snipmint@example.com",
+        "toEmail": "you@example.com",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "64e10f5a-1d5a-5cda-9174-14e46159292f",
+      "name": "Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        180
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtpCred",
+          "name": "SMTP"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput",
+      "notes": "Disabled: add your credentials, then enable."
+    }
+  ],
+  "connections": {
+    "Snipmint event": {
+      "main": [
+        [
+          {
+            "node": "Write message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write message": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "snipmint": {
+      "description": "E: turn Snipmint's events (published, failed, schedule started, batch done, waiting for approval) into a message for Telegram, Discord or e-mail. Enable the channels you use."
+    }
+  },
+  "tags": []
+}

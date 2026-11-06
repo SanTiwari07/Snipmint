@@ -1,0 +1,243 @@
+{
+  "name": "Snipmint: metadata and approval",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "snipmint/metadata",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "6aefa27d-5781-5d89-baa5-fdfc5fb297e9",
+      "name": "Metadata requested",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintWebhookHeader",
+          "name": "Snipmint webhook"
+        }
+      },
+      "webhookId": "1ae82d6b-b1ca-5a39-9311-50ffd6150d40"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $json.body.data.task_id }}/metadata",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 180000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id), language: $json.body.data.language }) }}"
+      },
+      "id": "765961e0-f77f-513d-bb75-5c498063e291",
+      "name": "Write metadata",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "04130f14-10bf-5b02-ba2a-810784ceea7b",
+              "leftValue": "={{ $json.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e5dc82be-7f9a-5330-8f99-b9527af44986",
+              "leftValue": "={{ !$json.run_at && !$json.batch_id }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2df78303-fee3-54e1-9d2f-485ab8398bac",
+      "name": "Approved and due now?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $json.id }}/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.id }}:publish:{{ $json.updated }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) }) }}"
+      },
+      "id": "5a903efd-620a-546c-b2d7-371653a37085",
+      "name": "Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) + ($json.id ? ':' + $json.id : ''), workflow: 'metadata-approval', status: ($json.approved ? 'success' : 'waiting'), task_id: $json.id, batch_id: null, message: String(($json.approved ? 'Approved' : 'Waiting for approval') + ': ' + ($json.title || '')).slice(0, 900) }) }}"
+      },
+      "id": "7c0ca12d-12da-5250-a402-9cb964c80cda",
+      "name": "Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        80
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Metadata requested": {
+      "main": [
+        [
+          {
+            "node": "Write metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write metadata": {
+      "main": [
+        [
+          {
+            "node": "Approved and due now?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved and due now?": {
+      "main": [
+        [
+          {
+            "node": "Publish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish": {
+      "main": [
+        [
+          {
+            "node": "Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "snipmint": {
+      "description": "D: write a clip's metadata with Snipmint's own generator (Gemini or the free builder), then publish only if it is approved (by you, or automatically if you turned auto-approve on)."
+    }
+  },
+  "tags": []
+}

@@ -13,6 +13,7 @@ import {
   metadataApi,
   youtubeApi,
 } from '../api/youtube'
+import { AutomationPanel } from '../components/AutomationPanel'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { MetadataEditor } from '../components/MetadataEditor'
 import { PublishDashboard, whenText } from '../components/PublishDashboard'
@@ -422,6 +423,16 @@ export function PublishStep() {
           </div>
           <PublishDashboard items={items} channels={status.channels} onChange={() => void refreshItems()} />
         </section>
+      )}
+
+      {status?.configured && job && sourceId && (
+        <AutomationPanel
+          clips={chosen.map((c) => ({ job_id: job.id, clip_file: c.video!, clip_id: c.id, source_id: sourceId }))}
+          approvedIds={clips.filter((c) => records[c.id]?.approved).map((c) => c.id)}
+          channelId={channel?.id ?? null}
+          privacy={privacy}
+          madeForKids={kids === 'yes'}
+        />
       )}
 
       {confirming && channel && (

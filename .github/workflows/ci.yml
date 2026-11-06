@@ -64,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check the compose file
-        run: docker compose config --quiet && docker compose --profile gpu --profile ollama config --quiet
+        run: docker compose config --quiet && docker compose --profile gpu --profile ollama config --quiet && N8N_DB_PASSWORD=ci N8N_ENCRYPTION_KEY=ci docker compose -f docker-compose.yml -f docker-compose.n8n.yml config --quiet
       - name: Build the CPU image
         run: docker build -f docker/Dockerfile -t snipmint:ci .
       - name: Smoke test the API

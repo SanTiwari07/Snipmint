@@ -23,22 +23,40 @@ def redact(text: str, *secrets: str) -> str:
     return out
 
 
-class RedactingFilter(logging.Filter):
-    """Installed on the ``snipmint`` logger while automation is configured."""
+class RedactingFilter:
+    """Redacts every log record in the process (all loggers, all handlers) while installed.
+
+    A filter on one logger would miss records from its child loggers, so this wraps the
+    log-record factory instead."""
 
     def __init__(self, *secrets: str):
-        super().__init__()
         self.secrets = [s for s in secrets if s]
+        self._previous = None
 
-    def filter(self, record: logging.LogRecord) -> bool:
-        try:
-            msg = record.getMessage()
-        except Exception:
-            return True
-        clean = redact(msg, *self.secrets)
-        if clean != msg:
-            record.msg, record.args = clean, ()
-        return True
+    def install(self) -> None:
+        if self._previous is not None:
+            return
+        previous = logging.getLogRecordFactory()
+        secrets = self.secrets
+
+        def factory(*args, **kwargs):
+            record = previous(*args, **kwargs)
+            try:
+                msg = record.getMessage()
+            except Exception:
+                return record
+            clean = redact(msg, *secrets)
+            if clean != msg:
+                record.msg, record.args = clean, ()
+            return record
+
+        self._previous = previous
+        logging.setLogRecordFactory(factory)
+
+    def uninstall(self) -> None:
+        if self._previous is not None:
+            logging.setLogRecordFactory(self._previous)
+            self._previous = None
 
 
 def verify_request(secret: str, headers, body: bytes, now: float | None = None) -> str | None:

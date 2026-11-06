@@ -13,6 +13,7 @@
 | 1. Free MVP | Done. Link → download → Whisper → free moment scoring → center crop → captions → MP4/SRT/titles.json/zip. Web flow: Start, Video, Moments, Captions, Make clips. Tested end to end on a real YouTube video |
 | 2. Smart framing | Done. Black-bar removal, YuNet face tracking with a calm camera (cuts at scene changes), two-people split that switches to the speaker during close-ups (per scene), whole-picture "fit" for screens, Auto choice per clip, framing picker in the UI. Tested on real videos (speech, screen recording, two-shot interview). Single-clip caption re-render not started |
 | 3. Advanced AI | Done. Gemini two-pass provider, key check, redaction, fallback, caption proofreading (single-word fixes), silent-video picking with a length guard, model choice; Free/Advanced switch and key field in the UI. Gemini layout picker not built: the face-based Auto framing covers it |
+| 6. n8n automation | Done (optional, off without SNIPMINT_N8N_WEBHOOK_SECRET): approval gate, automation tasks/batches/schedules in Snipmint, signed event outbox, n8n API with secret/HMAC auth, idempotency and rate limiting, six importable workflows, Docker Compose override with PostgreSQL, Publish-screen panel. Tested with mocked n8n and YouTube; see docs/n8n.md for what was verified inside n8n |
 | 5. YouTube publishing | Done (optional, off without Google credentials): OAuth connect/disconnect with PKCE, encrypted tokens, resumable uploads with retry/cancel/duplicate protection, per-clip metadata (Gemini + free fallback) with an editor, batch publishing dashboard, scheduled publishing. Tested against a mocked Google API only; not yet tried with a real channel |
 | 4. Extras | Done: file upload, local AI provider, -14 LUFS levelling, hook voice-over (Edge/Kokoro/cloned voice), save/open project files, captions on/off, size and length limits. Not built: cookies upload in the UI (use YOUTUBE_COOKIES_FILE), single-clip caption re-render |
 
@@ -458,6 +459,17 @@ UI: the Export step gets a framing control (Auto track / Center / Split) with sm
 **Env** (production in `.env`, development in `.env.development`): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `SNIPMINT_SECRET_KEY`, `YOUTUBE_UPLOAD_CONCURRENCY`, `SNIPMINT_UI_URL`; test-only endpoint overrides `YOUTUBE_{AUTH,TOKEN,REVOKE,API,UPLOAD}_URL`.
 
 **Acceptance check:** with a development OAuth client and `snipmint serve --dev` on localhost, connect a channel, publish one clip as public and one scheduled, see both in YouTube Studio; disconnect removes Snipmint from myaccount.google.com/permissions.
+
+## Phase 6: n8n automation (PRD §6.10, AU-N1..6)
+
+| Step | Files | Check |
+|---|---|---|
+| 6.1 Approval | `metadata/schemas.py` (`approved`), `metadata/generator.py` (`set_approval`; edits withdraw it), `POST /api/metadata/{source}/{clip}/approve` | `tests/automation`: blocked without approval, edit withdraws |
+| 6.2 Backend | `snipmint/automation/*`, `server/automation_api.py`, `youtube/publisher.py` (`listeners`, `error_kind`) | `tests/automation/test_n8n_integration.py` (the 12 scenarios + auth, rate limit, redaction) |
+| 6.3 Deployment | `docker-compose.n8n.yml`, `.env.example`, CI compose check | `docker compose -f docker-compose.yml -f docker-compose.n8n.yml config` |
+| 6.4 Workflows | `workflows/n8n/*.json` from `scripts/build_n8n_workflows.py` | `tests/automation/test_workflows.py` (structure, every HTTP call hits a real route, idempotency keys, notifiers disabled) |
+| 6.5 UI | `components/AutomationPanel.tsx`, approval in `MetadataEditor.tsx` | `src/components/AutomationPanel.test.tsx` |
+| 6.6 Docs | `docs/n8n.md`, README | |
 
 ## Conventions
 

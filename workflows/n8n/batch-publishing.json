@@ -1,0 +1,379 @@
+{
+  "name": "Snipmint: batch publishing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "snipmint/batch",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "1e01307f-5676-5608-8d32-0652d17bc439",
+      "name": "Batch created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintWebhookHeader",
+          "name": "Snipmint webhook"
+        }
+      },
+      "webhookId": "68921ff9-2ddf-5118-b378-34ee68aa2609"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://snipmint:8000/api/integrations/n8n/batches/{{ $json.body.data.batch_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "e0480f90-9525-59a3-b31c-9eee557ce9a0",
+      "name": "Get batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "tasks",
+        "options": {}
+      },
+      "id": "1952356b-3b0d-5ee1-8c54-a5a482bbb093",
+      "name": "One item per clip",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ $('Get batch').item.json.concurrency }}",
+        "options": {}
+      },
+      "id": "c65e91c2-e731-567c-ac46-9ea0e873223d",
+      "name": "Loop over clips",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/tasks/{{ $json.id }}/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.id }}:batch:{{ $json.updated }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) }) }}"
+      },
+      "id": "45414240-9e63-518b-bacd-d780f0840664",
+      "name": "Publish clip",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $('Get batch').item.json.delay_seconds }}",
+        "unit": "seconds"
+      },
+      "id": "e04e226b-35da-5f8c-85d8-cc1835445830",
+      "name": "Delay between uploads",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        160
+      ],
+      "webhookId": "4f4214b5-f0ac-5700-8886-12ce87f8e52a"
+    },
+    {
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds"
+      },
+      "id": "0cde3d7a-2547-596d-8db8-9355ccdbbf75",
+      "name": "Let uploads finish",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        -120
+      ],
+      "webhookId": "49e48090-27db-57dd-b09d-a3764a342527"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://snipmint:8000/api/integrations/n8n/batches/{{ $('Get batch').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "e61e3c5a-a72d-5934-b978-640c75db9fef",
+      "name": "Batch summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        -120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2c5529f-e666-5b98-af79-425d64306ad3",
+              "leftValue": "={{ !!$json.completed_at || $runIndex >= 120 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "30a73711-36c2-5097-8463-b631ea3e8759",
+      "name": "Finished?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://snipmint:8000/api/integrations/n8n/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: String($execution.id) + (null ? ':' + null : ''), workflow: 'batch-publishing', status: ($json.summary.failed > 0 ? 'error' : ($json.completed_at ? 'success' : 'waiting')), task_id: null, batch_id: $json.id, message: String('Published ' + $json.summary.succeeded + ', failed ' + $json.summary.failed + ', skipped ' + $json.summary.skipped + ', pending ' + $json.summary.pending).slice(0, 900) }) }}"
+      },
+      "id": "2ccad8ae-149f-521c-8123-1edd79163719",
+      "name": "Report batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        -200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "snipmintApiHeader",
+          "name": "Snipmint API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Batch created": {
+      "main": [
+        [
+          {
+            "node": "Get batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get batch": {
+      "main": [
+        [
+          {
+            "node": "One item per clip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per clip": {
+      "main": [
+        [
+          {
+            "node": "Loop over clips",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop over clips": {
+      "main": [
+        [
+          {
+            "node": "Let uploads finish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Publish clip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish clip": {
+      "main": [
+        [
+          {
+            "node": "Delay between uploads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay between uploads": {
+      "main": [
+        [
+          {
+            "node": "Loop over clips",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Let uploads finish": {
+      "main": [
+        [
+          {
+            "node": "Batch summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch summary": {
+      "main": [
+        [
+          {
+            "node": "Finished?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finished?": {
+      "main": [
+        [
+          {
+            "node": "Report batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Let uploads finish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "snipmint": {
+      "description": "C: publish a batch one clip (or `concurrency` clips) at a time with a delay in between; failures don't stop the rest; report the summary when every clip has an outcome."
+    }
+  },
+  "tags": []
+}
