@@ -17,6 +17,8 @@ export interface ClipsDraft {
   loudness: boolean
   voiceover: { enabled: boolean; engine: string; voice_id: string }
   jobId: string | null
+  /** The exact request that made the last clips, to tell when they are out of date. */
+  jobKey: string | null
   /** Picks from an opened project, applied once its moments are loaded. */
   pending: { selected: string[]; edits: ClipsDraft['edits'] } | null
 }
@@ -35,6 +37,7 @@ const DEFAULT: ClipsDraft = {
   loudness: true,
   voiceover: { enabled: false, engine: 'edge', voice_id: 'en-US-AvaNeural' },
   jobId: null,
+  jobKey: null,
   pending: null,
 }
 
@@ -60,7 +63,7 @@ export const useClips = create<ClipsStore>()(
       sourceError: null,
       patch: (p) => set(p),
       startSource: (url, sourceId, taskId) =>
-        set({ url, sourceId, taskId, selected: [], edits: {}, jobId: null, source: null, sourceError: null }),
+        set({ url, sourceId, taskId, selected: [], edits: {}, jobId: null, jobKey: null, source: null, sourceError: null }),
       refresh: async () => {
         const id = get().sourceId
         if (!id) return null
@@ -119,8 +122,8 @@ export const useClips = create<ClipsStore>()(
         }
       }),
       partialize: (s) => {
-        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId, pending } = s
-        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId, pending }
+        const { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId, jobKey, pending } = s
+        return { url, sourceId, taskId, band, count, selected, edits, captionsEnabled, framing, quality, loudness, voiceover, jobId, jobKey, pending }
       },
     },
   ),

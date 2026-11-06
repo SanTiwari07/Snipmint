@@ -182,3 +182,12 @@ def test_gemini_key_comes_only_from_env(client, monkeypatch):
 
     monkeypatch.setenv("GEMINI_API_KEY", "server-key")
     assert clips_api.gemini_key_from(None) == "server-key"  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("job_id", ["..", ".", "a/b", r"a\b", r"..\jobs", "C:", ""])
+def test_job_ids_cannot_leave_the_jobs_folder(tmp_path, job_id):
+    jobs = tmp_path / "jobs"
+    (jobs / "2026-01-01_000000_abc123").mkdir(parents=True)
+    runner = JobRunner(jobs)
+    assert runner.workspace_for(job_id) is None
+    assert runner.workspace_for("2026-01-01_000000_abc123") == jobs / "2026-01-01_000000_abc123"

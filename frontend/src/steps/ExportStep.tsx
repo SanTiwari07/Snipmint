@@ -25,8 +25,26 @@ export function ExportStep() {
   const styles = useCatalog((s) => s.styles)
   const formats = useCatalog((s) => s.formats)
   const health = useCatalog((s) => s.health)
-  const { source, selected, edits, sourceId, captionsEnabled, quality, loudness, voiceover, framing, jobId, patch } = useClips()
+  const { source, selected, edits, sourceId, captionsEnabled, quality, loudness, voiceover, framing, jobId, jobKey, patch } =
+    useClips()
   const clips = useMemo(() => selectedClips({ source, selected, edits }), [source, selected, edits])
+  const request = useMemo(
+    () =>
+      sourceId
+        ? {
+            source_id: sourceId,
+            clips,
+            captions: { preset: draft.captions.preset, overrides: draft.captions.overrides, font: draft.captions.font },
+            captions_enabled: captionsEnabled,
+            format: draft.format,
+            framing,
+            export: { quality, loudness },
+            voiceover: { enabled: voiceover.enabled, voice: { engine: voiceover.engine, voice_id: voiceover.voice_id } },
+          }
+        : null,
+    [sourceId, clips, draft.captions, draft.format, captionsEnabled, framing, quality, loudness, voiceover],
+  )
+  const requestKey = request ? JSON.stringify(request) : null
   const [job, setJob] = useState<ClipsJob | null>(null)
   const [live, setLive] = useState<Live | null>(null)
   const [running, setRunning] = useState<string | null>(null)
@@ -43,22 +61,13 @@ export function ExportStep() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const run = async () => {
-    if (!sourceId || !clips.length) return
+    if (!request || !clips.length) return
     setLive({ fraction: 0, message: 'Starting' })
     setJob(null)
     try {
-      const { job_id } = await clipsApi.createClips({
-        source_id: sourceId,
-        clips,
-        captions: { preset: draft.captions.preset, overrides: draft.captions.overrides, font: draft.captions.font },
-        captions_enabled: captionsEnabled,
-        format: draft.format,
-        framing,
-        export: { quality, loudness },
-        voiceover: { enabled: voiceover.enabled, voice: { engine: voiceover.engine, voice_id: voiceover.voice_id } },
-      })
+      const { job_id } = await clipsApi.createClips(request)
       setRunning(job_id)
-      patch({ jobId: job_id })
+      patch({ jobId: job_id, jobKey: requestKey })
       stop.current = watchJob(
         job_id,
         (e) => setLive({ fraction: e.fraction, message: e.message }),
@@ -96,6 +105,8 @@ export function ExportStep() {
   const busy = running !== null
   const outputs = job?.status === 'done' ? (job.result?.clips ?? []) : []
   const made = outputs.filter((o) => o.video)
+  // clips made with other picks or settings than the ones on screen now
+  const stale = made.length > 0 && jobKey !== requestKey
   const styleName = styles.find((s) => s.id === draft.captions.preset)?.name ?? draft.captions.preset
   const fmt = formats.find((f) => f.id === draft.format)
   const total = clips.reduce((acc, c) => acc + (c.end - c.start), 0)
@@ -119,7 +130,7 @@ export function ExportStep() {
             </Button>
           ) : (
             <Button
-              variant={made.length ? 'secondary' : 'primary'}
+              variant={made.length && !stale ? 'secondary' : 'primary'}
               className="btn--lg"
               disabled={!clips.length || (health ? !health.ffmpeg : false)}
               onClick={() => {
@@ -127,11 +138,14 @@ export function ExportStep() {
                 void run()
               }}
             >
-              {made.length ? 'Make again' : `Make ${clips.length} clip${clips.length === 1 ? '' : 's'}`}
+              {made.length && !stale ? 'Make again' : `Make ${clips.length} clip${clips.length === 1 ? '' : 's'}`}
             </Button>
           )}
           {made.length > 1 && !busy && job && (
-            <DownloadLink className="btn btn--primary btn--lg" href={clipFileUrl(job.id, 'clips.zip', true)}>
+            <DownloadLink
+              className={`btn ${stale ? 'btn--secondary' : 'btn--primary'} btn--lg`}
+              href={clipFileUrl(job.id, 'clips.zip', true)}
+            >
               Download all
             </DownloadLink>
           )}
@@ -166,6 +180,13 @@ export function ExportStep() {
       {health && (!health.ffmpeg || !health.libass) && (
         <Banner tone="error" title={health.ffmpeg ? 'Your ffmpeg can’t draw captions' : 'ffmpeg is missing'}>
           Snipmint needs ffmpeg with libass to make clips. The Docker image includes it.
+        </Banner>
+      )}
+
+      {stale && !busy && (
+        <Banner tone="warn" title="These clips are out of date">
+          They were made with earlier picks or settings. Make the clips again to use your current choices ({clips.length}{' '}
+          clip{clips.length === 1 ? '' : 's'}).
         </Banner>
       )}
 

@@ -179,6 +179,35 @@ describe('projects', () => {
   })
 })
 
+describe('results', () => {
+  it('says when the clips on screen were made with other choices', async () => {
+    const job = {
+      id: 'job-1',
+      status: 'done',
+      error: null,
+      result: { clips: [1, 2, 3].map((i) => ({ id: `m0${i}`, index: i, title: `Clip ${i}`, start: i * 100, end: i * 100 + 40,
+        video: `clip_0${i}.mp4`, srt: `clip_0${i}.srt`, error: null, layout: 'track', framing_note: null, voiceover: false, note: null })) },
+    }
+    const realFetch = globalThis.fetch
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).startsWith('/api/jobs/job-1')
+        ? new Response(JSON.stringify(job), { status: 200, headers: { 'Content-Type': 'application/json' } })
+        : realFetch(input, init),
+    ) as typeof fetch
+    useClips.setState({ sourceId: 'yt-AAAAAAAAAAA', url: 'https://youtu.be/AAAAAAAAAAA' })
+    useClips.getState().setSource(SOURCE)
+    useClips.setState({ selected: ['m01', 'm02', 'm03', 'm04'], jobId: 'job-1', jobKey: 'made-with-three-clips' })
+    useSession.setState({ started: true })
+    render(
+      <MemoryRouter initialEntries={['/export']}>
+        <App />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText(/these clips are out of date/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /make 4 clips/i })).toBeInTheDocument()
+  })
+})
+
 describe('flow guards', () => {
   it('needs a ready video and at least one moment', () => {
     expect(screenFor('/source', { ready: false, selected: 0 })?.next?.blocked).toBeTruthy()
