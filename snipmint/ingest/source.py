@@ -170,5 +170,27 @@ class Source:
     def audio(self) -> Path:
         return self.file("audio.wav")
 
+    def delete_media(self) -> int:
+        """Delete the downloaded video, the extracted audio and any partial download.
+
+        Keeps the transcript, signals, moments and metadata, so the analysis survives. Does
+        nothing (returns 0) while the source is being prepared. Returns the bytes freed."""
+        if not self.lock.acquire(blocking=False):
+            return 0
+        freed = 0
+        try:
+            for f in [*self.path.glob("source.*"), self.audio, self.file("audio.tmp.wav")]:
+                try:
+                    size = f.stat().st_size
+                    f.unlink()
+                    freed += size
+                except FileNotFoundError:
+                    pass
+                except OSError:  # still open (Windows) or no permission: leave it, never fail a job
+                    pass
+        finally:
+            self.lock.release()
+        return freed
+
     def moments_file(self, provider: str) -> Path:
         return self.file(f"moments.{provider}.json")

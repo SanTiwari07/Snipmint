@@ -187,8 +187,10 @@ def register(app: FastAPI, runner: JobRunner) -> None:
     @app.post("/api/clips", tags=["clips"])
     def create_clips(req: clips_mod.ClipsRequest) -> dict[str, str]:
         src = _source(req.source_id)
-        if not src.video.is_file():
-            raise HTTPException(409, "This video is still being prepared.")
+        meta = src.meta
+        if not src.video.is_file() and (meta is None or meta.url.startswith("file:")):
+            raise HTTPException(409, "The video was removed to save space. Upload it again.")
+        # a link whose video was removed after the last clips is downloaded again inside the job
         from ..captions.styles import resolve_style
 
         resolve_style(req.captions.preset, req.captions.overrides, req.captions.font)  # fail fast

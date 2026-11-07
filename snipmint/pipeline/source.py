@@ -157,6 +157,41 @@ def prepare_source(
             raise
 
 
+def ensure_video(
+    source: Source,
+    *,
+    progress: ProgressCallback | None = None,
+    cancel: threading.Event | None = None,
+) -> None:
+    """Make sure ``source.mp4`` exists, downloading it again if it was removed to save space."""
+    if source.video.is_file():
+        return
+    meta = source.meta
+    url = meta.url if meta else ""
+    if not url or url.startswith("file:"):
+        raise IngestError("The video file was removed to save space and it came from your computer. "
+                          "Upload it again.")  # fmt: skip
+    with source.lock:
+        if source.video.is_file():  # another job fetched it while we waited
+            return
+        source.set_stage("download", "running")
+
+        def report(frac: float, message: str) -> None:
+            if progress:
+                progress(ProgressEvent(stage="download", fraction=round(0.05 * frac, 4),
+                                       message=f"Downloading the video again: {message}"))  # fmt: skip
+
+        try:
+            youtube.download(url, source.video, cancel=cancel, progress=report)
+        except JobCancelled:
+            source.set_stage("download", "pending")
+            raise
+        except SnipmintError as exc:
+            source.set_stage("download", "failed", str(exc))
+            raise
+        source.set_stage("download", "done")
+
+
 def reanalyze(
     source: Source,
     opts: AnalyzeOptions,

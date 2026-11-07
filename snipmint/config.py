@@ -119,6 +119,16 @@ def load_env_file(path: Path, *, override: bool = False) -> list[str]:
     return applied
 
 
+def delete_source_after_clips() -> bool:
+    """Remove the downloaded source video once the clips are made (``SNIPMINT_DELETE_SOURCE``,
+    ``delete_source_after_clips`` in config.toml). On by default: the clips, transcript and
+    analysis stay, and the video is downloaded again if you make clips from it later."""
+    value = os.environ.get("SNIPMINT_DELETE_SOURCE")
+    if value in (None, ""):
+        value = _file_config().get("delete_source_after_clips", True)
+    return str(value).strip().lower() not in ("0", "false", "no", "off")
+
+
 def load_settings() -> Settings:
     cfg = _file_config()
 

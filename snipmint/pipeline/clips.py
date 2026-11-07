@@ -123,8 +123,11 @@ def make_clips(
     cancel: threading.Event | None = None,
 ) -> dict:
     source = Source.existing(req.source_id)
-    if source is None or not source.video.is_file() or not source.file("transcript.json").is_file():
+    if source is None or not source.file("transcript.json").is_file():
         raise SnipmintError("That video isn't ready yet. Analyse it first.")
+    from .source import ensure_video
+
+    ensure_video(source, progress=progress, cancel=cancel)  # downloads it again if it was removed
     meta = source.meta
     transcript = load_transcript(source)
     fmt = get_format(req.format)
@@ -215,9 +218,16 @@ def make_clips(
     made = [o for o in outputs if o.video]
     if not made:
         raise SnipmintError("None of the clips could be rendered: " + (outputs[0].error or "unknown error"))
+    freed = 0
+    if len(made) == n and config.delete_source_after_clips():
+        # every clip is rendered and lives in this job's folder: the big download is no longer needed
+        freed = source.delete_media()
+        if freed:
+            log.info("Removed the source video of %s (%.0f MB) after making the clips", source.id, freed / 1e6)
     if progress:
         progress(ProgressEvent(stage="done", fraction=1.0, message=f"{len(made)} of {n} clips ready"))
-    return {"clips": [o.model_dump() for o in outputs], "files": {"titles": "titles.json"}}
+    return {"clips": [o.model_dump() for o in outputs], "files": {"titles": "titles.json"},
+            "source_removed_mb": round(freed / 1e6, 1)}  # fmt: skip
 
 
 def _hook_voice(ws: Workspace, index: int, text: str, voice: VoiceSelection) -> tuple[str, float]:
@@ -315,8 +325,10 @@ class ClipPreviewRequest(BaseModel):
 def preview_clip_frame(req: ClipPreviewRequest) -> bytes:
     """PNG of one frame of the real clip with real captions, from the real renderer."""
     source = Source.existing(req.source_id)
-    if source is None or not source.video.is_file() or not source.file("transcript.json").is_file():
+    if source is None or not source.file("transcript.json").is_file():
         raise SnipmintError("That video isn't ready yet.")
+    if not source.video.is_file():
+        raise SnipmintError("The video was removed to save space. It is downloaded again when you make the clips.")
     transcript = load_transcript(source)
     fmt = get_format(req.format)
     if not fmt.is_video:
