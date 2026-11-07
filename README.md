@@ -73,6 +73,9 @@ from now on, so you can bookmark it.
 
 - The first build takes a few minutes. The first video also downloads the speech model (about 460 MB) once.
 - Your videos, clips and the speech model are kept in the `data` folder next to `docker-compose.yml`.
+- **Windows, one step:** double-click `start.cmd` (or run `.\start.ps1`). It starts Docker Desktop if needed,
+  starts Snipmint (and n8n when it is set up in `.env`), waits until they answer and opens the app with its
+  access token. Add `-Build` after an update. `.\stop.ps1` stops everything and keeps all your data.
 - Stop with `docker compose down`, start again with `docker compose up -d`.
 - To update: `git pull`, then `docker compose up -d --build`.
 
@@ -128,6 +131,7 @@ All settings are optional and go in `.env` (see [.env.example](.env.example)). R
 | `WHISPER_MODEL` | `small` (GPU image: `large-v3-turbo`) | Speech model; `base` is faster, `medium` more accurate |
 | `YOUTUBE_COOKIES_FILE` | empty | Cookies file for videos YouTube won't download without sign-in |
 | `MAX_SOURCE_MINUTES` | `180` | Longest video accepted |
+| `SNIPMINT_DELETE_SOURCE` | `1` | Delete the downloaded video after the clips are made (clips, transcript and analysis stay; a link is downloaded again if you make clips again, an uploaded file must be uploaded again). `0` keeps it |
 | `MAX_UPLOAD_MB` | `4096` | Largest file you can upload |
 | `SNIPMINT_TOKEN` | made once, kept in `data/.token` | The access token in the link |
 
