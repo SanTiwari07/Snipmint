@@ -52,7 +52,6 @@ export function PublishStep() {
   const [allowDuplicate, setAllowDuplicate] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
-  const [open, setOpen] = useState<string | null>(null)
   const stop = useRef<(() => void) | null>(null)
 
   const refreshItems = useCallback(async () => {
@@ -111,7 +110,14 @@ export function PublishStep() {
   const hostMismatch = !!redirectHost && redirectHost !== window.location.hostname
   const missing = clips.filter((c) => !records[c.id])
   const dupes = duplicateTitles(clips.map((c) => records[c.id]).filter(Boolean))
-  const chosen = clips.filter((c) => picked.includes(c.id) && records[c.id])
+  const pickedClips = clips.filter((c) => picked.includes(c.id) && records[c.id])
+  // clips that already reached the channel are left out, unless "Upload again anyway" is ticked
+  const publishedFiles = useMemo(
+    () => new Set(items.filter((i) => i.status === 'PUBLISHED' && i.job_id === jobId).map((i) => i.clip_file)),
+    [items, jobId],
+  )
+  const chosen = allowDuplicate ? pickedClips : pickedClips.filter((c) => !publishedFiles.has(c.video!))
+  const alreadyOnChannel = pickedClips.length - chosen.length
   const scheduleIso = scheduleOn ? localToIso(scheduleAt) : null
 
   const connect = async () => {
@@ -148,7 +154,6 @@ export function PublishStep() {
         language,
       )
       setRecords(res.clips)
-      setOpen((o) => o ?? which[0]?.id ?? null)
     } catch (e) {
       toast('error', e instanceof Error ? e.message : 'Could not write the metadata.')
     } finally {
@@ -190,7 +195,9 @@ export function PublishStep() {
   const blocked = !channel
     ? 'Connect a channel first.'
     : !chosen.length
-      ? 'Pick at least one clip with a title.'
+      ? alreadyOnChannel
+        ? 'Every picked clip is already on your channel.'
+        : 'Pick at least one clip with a title.'
       : dupes.size
         ? 'Two clips share a title.'
         : scheduleOn && !scheduleIso
@@ -206,7 +213,9 @@ export function PublishStep() {
         <div className="step-nav__next">
           {blocked && status?.configured && <span className="step-nav__error">{blocked}</span>}
           <Button variant="primary" className="btn--lg" disabled={!!blocked || !status?.configured} onClick={() => setConfirming(true)}>
-            {scheduleOn ? 'Schedule' : 'Publish'} {chosen.length} clip{chosen.length === 1 ? '' : 's'}
+            {!chosen.length && alreadyOnChannel
+              ? 'All clips published'
+              : `${scheduleOn ? 'Schedule' : 'Publish'} ${chosen.length} clip${chosen.length === 1 ? '' : 's'}`}
           </Button>
         </div>
       </div>
@@ -324,39 +333,32 @@ export function PublishStep() {
               const on = picked.includes(c.id)
               return (
                 <li key={c.id} className={`publish-clip ${on ? 'publish-clip--on' : ''}`}>
-                  <div className="publish-clip__head">
-                    <video className="publish-clip__video" preload="metadata" muted src={clipFileUrl(job.id, c.video!)} />
-                    <span className="publish-clip__text">
-                      <label className="publish-clip__pick">
-                        <input
-                          type="checkbox"
-                          checked={on}
-                          disabled={!rec}
-                          onChange={() => setPicked((p) => (p.includes(c.id) ? p.filter((x) => x !== c.id) : [...p, c.id]))}
-                        />
-                        <strong>{rec?.metadata.title ?? c.title ?? `Clip ${c.index}`}</strong>
-                      </label>
-                      <span className="field__hint">
+                  <video className="publish-clip__video" preload="metadata" muted controls src={clipFileUrl(job.id, c.video!)} />
+                  <div className="publish-clip__body">
+                    <label className="publish-clip__pick">
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        disabled={!rec}
+                        aria-label={`Publish clip ${c.index}`}
+                        onChange={() => setPicked((p) => (p.includes(c.id) ? p.filter((x) => x !== c.id) : [...p, c.id]))}
+                      />
+                      <strong>
                         Clip {c.index} · {clock(c.start)}–{clock(c.end)}
-                        {rec ? ` · ${rec.metadata.hashtags.join(' ')}` : ' · no metadata yet'}
-                      </span>
-                    </span>
+                      </strong>
+                      {!rec && <span className="field__hint">no metadata yet</span>}
+                    </label>
                     {rec && (
-                      <Button variant="text" aria-expanded={open === c.id} onClick={() => setOpen(open === c.id ? null : c.id)}>
-                        {open === c.id ? 'Close' : 'Edit'}
-                      </Button>
+                      <MetadataEditor
+                        collapsible
+                        record={rec}
+                        categories={options?.categories ?? { [rec.metadata.category_id]: rec.metadata.category }}
+                        language={language}
+                        duplicateTitle={dupes.has(c.id)}
+                        onRecord={(r) => setRecords((all) => ({ ...all, [r.clip_id]: r }))}
+                      />
                     )}
                   </div>
-                  {rec && open === c.id && (
-                    <MetadataEditor
-                      record={rec}
-                      categories={options?.categories ?? { [rec.metadata.category_id]: rec.metadata.category }}
-                      language={language}
-                      duplicateTitle={dupes.has(c.id)}
-                      onRecord={(r) => setRecords((all) => ({ ...all, [r.clip_id]: r }))}
-                    />
-                  )}
-                  {rec && open !== c.id && dupes.has(c.id) && <p className="field__error">Same title as another clip. Edit one of them.</p>}
                 </li>
               )
             })}

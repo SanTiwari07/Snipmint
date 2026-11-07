@@ -96,17 +96,22 @@ export function MetadataEditor({
   language,
   onRecord,
   duplicateTitle,
+  collapsible,
 }: {
   record: MetadataRecord
   categories: Record<string, string>
   language: string
   onRecord: (r: MetadataRecord) => void
   duplicateTitle?: boolean
+  /** Show title, description and hashtags right away; keep the rarely changed fields behind "More options". */
+  collapsible?: boolean
 }) {
   const toast = useSession((s) => s.toast)
   const [drafts, setDrafts] = useState<Drafts>({})
   const [busy, setBusy] = useState<FieldName | 'all' | null>(null)
+  const [more, setMore] = useState(false)
   const catId = useId()
+  const moreId = useId()
 
   const save = async (field: TextField) => {
     const text = drafts[field]
@@ -148,8 +153,12 @@ export function MetadataEditor({
   }
 
   const m = record.metadata
-  return (
-    <div className="meta-editor">
+  const quick: TextField[] = ['title', 'description', 'hashtags']
+  const row = (f: TextField) => (
+    <FieldRow key={f} field={f} record={record} drafts={drafts} busy={busy} onDraft={(fl, t) => setDrafts((d) => ({ ...d, [fl]: t }))} onSave={save} onRegenerate={(fl) => void regenerate(fl)} />
+  )
+  const head = (
+    <>
       <div className="meta-editor__bar">
         <span className="field__hint">
           {record.provider === 'gemini' ? 'Written by Gemini from the clip’s transcript.' : 'Built from the clip’s own words (free mode).'}
@@ -184,11 +193,15 @@ export function MetadataEditor({
           {record.approved ? 'Withdraw approval' : 'Approve'}
         </Button>
       </div>
+    </>
+  )
+  const notes = (
+    <>
       {record.note && <p className="field__hint field__hint--warn">{record.note}</p>}
       {duplicateTitle && <p className="field__error">Another clip from this video has the same title. Titles must be unique.</p>}
-
-      <FieldRow field="title" record={record} drafts={drafts} busy={busy} onDraft={(f, t) => setDrafts((d) => ({ ...d, [f]: t }))} onSave={save} onRegenerate={(f) => void regenerate(f)} />
-
+    </>
+  )
+  const variants = (
       <div className="meta-variants">
         <div className="meta-field__head">
           <span className="field__label">Title ideas</span>
@@ -216,11 +229,8 @@ export function MetadataEditor({
         </ul>
         {m.title_reason && <p className="field__hint">Why this pick: {m.title_reason}</p>}
       </div>
-
-      {TEXT_FIELDS.filter((f) => f !== 'title').map((f) => (
-        <FieldRow key={f} field={f} record={record} drafts={drafts} busy={busy} onDraft={(fl, t) => setDrafts((d) => ({ ...d, [fl]: t }))} onSave={save} onRegenerate={(fl) => void regenerate(fl)} />
-      ))}
-
+  )
+  const category = (
       <div className="meta-field">
         <div className="meta-field__head">
           <label className="field__label" htmlFor={catId}>
@@ -252,6 +262,40 @@ export function MetadataEditor({
           ))}
         </select>
       </div>
+  )
+
+  if (collapsible) {
+    return (
+      <div className="meta-editor meta-editor--quick">
+        {notes}
+        {quick.map(row)}
+        <div className="meta-more">
+          <Button variant="text" aria-expanded={more} aria-controls={moreId} onClick={() => setMore((v) => !v)}>
+            {more ? 'Fewer options' : 'More options'}
+          </Button>
+          <span className="field__hint">Title ideas, tags, hook, category and approval for automation.</span>
+          {record.approved && <Badge tone="good">Approved</Badge>}
+        </div>
+        {more && (
+          <div className="meta-editor" id={moreId}>
+            {head}
+            {variants}
+            {TEXT_FIELDS.filter((f) => !quick.includes(f)).map(row)}
+            {category}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="meta-editor">
+      {head}
+      {notes}
+      {row('title')}
+      {variants}
+      {TEXT_FIELDS.filter((f) => f !== 'title').map(row)}
+      {category}
     </div>
   )
 }

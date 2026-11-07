@@ -156,7 +156,7 @@ describe('PublishStep', () => {
       </MemoryRouter>,
     )
     expect(await screen.findByText('My Channel')).toBeInTheDocument()
-    await screen.findByText('Why do you never save?')
+    await screen.findByDisplayValue('Why do you never save?')
     fireEvent.click(screen.getByRole('radio', { name: 'Unlisted' }))
     const go = screen.getByRole('button', { name: /publish 1 clip/i })
     await waitFor(() => expect(go).toBeEnabled())
@@ -169,5 +169,37 @@ describe('PublishStep', () => {
     const body = calls.find((c) => c.path === '/api/youtube/publish' && c.method === 'POST')!.body as Record<string, unknown>
     expect(body).toMatchObject({ confirmed: true, privacy: 'unlisted', made_for_kids: false, channel_id: 'UC1', publish_at: null })
     expect((body.clips as { title: string }[])[0].title).toBe('Why do you never save?')
+  })
+
+  it('shows title and description for editing without opening anything', async () => {
+    mockFetch(routes(true))
+    render(
+      <MemoryRouter>
+        <PublishStep />
+      </MemoryRouter>,
+    )
+    const title = (await screen.findByLabelText('Title', { selector: 'input' })) as HTMLInputElement
+    expect(title.value).toBe('Why do you never save?')
+    expect(screen.getByLabelText('Description', { selector: 'textarea' })).toBeInTheDocument()
+    // the rarely changed fields stay tucked away until asked for
+    expect(screen.queryByLabelText('Hook', { selector: 'input' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'More options' }))
+    expect(screen.getByLabelText('Hook', { selector: 'input' })).toBeInTheDocument()
+  })
+
+  it('disables the button once every picked clip is already on the channel', async () => {
+    const done = { ...ITEM, job_id: 'job1', clip_file: 'clip_01.mp4', status: 'PUBLISHED' as const, error: null, video_url: 'https://www.youtube.com/shorts/abc' }
+    mockFetch({ ...routes(true), 'GET /api/youtube/publish': () => [done] })
+    render(
+      <MemoryRouter>
+        <PublishStep />
+      </MemoryRouter>,
+    )
+    const button = await screen.findByRole('button', { name: 'All clips published' })
+    expect(button).toBeDisabled()
+    expect(screen.getByText('Every picked clip is already on your channel.')).toBeInTheDocument()
+    // the person can still choose to send it a second time
+    fireEvent.click(screen.getByRole('checkbox', { name: /upload again anyway/i }))
+    await waitFor(() => expect(screen.getByRole('button', { name: /publish 1 clip/i })).toBeEnabled())
   })
 })
